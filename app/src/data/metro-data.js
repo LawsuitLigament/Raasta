@@ -86,9 +86,9 @@ export const LINE_STATIONS = {
   ],
   pink: [
     'majlis-park', 'azadpur', 'shalimar-bagh', 'netaji-subhash-place',
-    'shakurpur', 'punjabi-bagh-west', 'esi-basai-darapur',
+    'shakurpur', 'punjabi-bagh', 'esi-basai-darapur',
     'rajouri-garden', 'maya-puri', 'naraina-vihar', 'delhi-cantt',
-    'durgabai-deshmukh-south-campus', 'sir-vishweshwaraiah-moti-bagh',
+    'dhaula-kuan', 'sir-vishweshwaraiah-moti-bagh',
     'bhikaji-cama-place', 'sarojini-nagar', 'dilli-haat-ina',
     'south-extension', 'lajpat-nagar', 'vinobapuri', 'ashram',
     'sarai-kale-khan', 'mayur-vihar-pocket-1', 'mayur-vihar-phase-1',
@@ -206,7 +206,7 @@ const stationNames = {
   'anand-vihar': 'Anand Vihar ISBT', 'kaushambi': 'Kaushambi', 'vaishali': 'Vaishali',
 
   // Green Line
-  'ashok-park-main': 'Ashok Park Main', 'punjabi-bagh': 'Punjabi Bagh',
+  'ashok-park-main': 'Ashok Park Main', 'punjabi-bagh': 'Punjabi Bagh (West)',
   'shivaji-park': 'Shivaji Park', 'madipur': 'Madipur',
   'paschim-vihar-east': 'Paschim Vihar East', 'paschim-vihar-west': 'Paschim Vihar West',
   'peeragarhi': 'Peeragarhi', 'udyog-nagar': 'Udyog Nagar',
@@ -239,10 +239,9 @@ const stationNames = {
 
   // Pink Line
   'majlis-park': 'Majlis Park', 'shalimar-bagh': 'Shalimar Bagh',
-  'shakurpur': 'Shakurpur', 'punjabi-bagh-west': 'Punjabi Bagh West',
+  'shakurpur': 'Shakurpur',
   'esi-basai-darapur': 'ESI Basai Darapur', 'maya-puri': 'Maya Puri',
   'naraina-vihar': 'Naraina Vihar', 'delhi-cantt': 'Delhi Cantt',
-  'durgabai-deshmukh-south-campus': 'Durgabai Deshmukh South Campus',
   'sir-vishweshwaraiah-moti-bagh': 'Sir Vishweshwaraiah Moti Bagh',
   'bhikaji-cama-place': 'Bhikaji Cama Place', 'sarojini-nagar': 'Sarojini Nagar',
   'south-extension': 'South Extension', 'vinobapuri': 'Vinobapuri',
@@ -278,7 +277,7 @@ const stationNames = {
   'nangli': 'Nangli', 'najafgarh': 'Najafgarh', 'dhansa-bus-stand': 'Dhansa Bus Stand',
 
   // Airport Express
-  'shivaji-stadium': 'Shivaji Stadium', 'dhaula-kuan': 'Dhaula Kuan',
+  'shivaji-stadium': 'Shivaji Stadium', 'dhaula-kuan': 'Dhaula Kuan (South Campus)',
   'delhi-aerocity': 'Delhi Aerocity', 'igi-airport-t3': 'IGI Airport (T3)',
   'yashobhoomi-dwarka-sector-25': 'Yashobhoomi Dwarka Sector 25',
 };
@@ -341,7 +340,8 @@ export const INTERCHANGE_TIMES = {
   'rajouri-garden': { 'blue-pink': 4, 'pink-blue': 4 },
   'mayur-vihar-phase-1': { 'blue-pink': 4, 'pink-blue': 4 },
   'ashok-park-main': { 'green-greenBranch': 2, 'greenBranch-green': 2 },
-  'durgabai-deshmukh-south-campus': { 'pink-orange': 8, 'orange-pink': 8 },
+  'dhaula-kuan': { 'pink-orange': 8, 'orange-pink': 8 },
+  'punjabi-bagh': { 'pink-green': 5, 'green-pink': 5 },
 };
 
 // Get transfer time between two lines at a station
@@ -369,7 +369,20 @@ export const FARE_CHART = {
     { maxKm: Infinity, tokenFare: 64 },
   ],
   cardDiscountPercent: 10,
+  offPeakDiscountPercent: 20,
 };
+
+// Check if currently off-peak (Sundays, 06:00-08:00, 12:00-17:00, 21:00-onwards)
+export function isOffPeak(date = new Date()) {
+  const day = date.getDay();
+  if (day === 0) return true; 
+  
+  const hour = date.getHours();
+  if (hour >= 6 && hour < 8) return true;
+  if (hour >= 12 && hour < 17) return true;
+  if (hour >= 21 || hour < 6) return true;
+  return false;
+}
 
 // Average distance between stations in km (estimated)
 // Some lines have longer spacing (Airport Express, extensions)
@@ -389,17 +402,20 @@ export const AVG_DISTANCE_KM = {
 
 // Calculate fare from distance
 export function calculateFare(distanceKm) {
+  const offPeak = isOffPeak();
+  const currentDiscount = offPeak ? FARE_CHART.offPeakDiscountPercent : FARE_CHART.cardDiscountPercent;
+
   for (const slab of FARE_CHART.slabs) {
     if (distanceKm <= slab.maxKm) {
       const tokenFare = slab.tokenFare;
-      const cardFare = Math.round(tokenFare * (1 - FARE_CHART.cardDiscountPercent / 100));
-      return { tokenFare, cardFare, savings: tokenFare - cardFare };
+      const cardFare = Math.round(tokenFare * (1 - currentDiscount / 100));
+      return { tokenFare, cardFare, savings: tokenFare - cardFare, isOffPeak: offPeak };
     }
   }
   const last = FARE_CHART.slabs[FARE_CHART.slabs.length - 1];
   const tokenFare = last.tokenFare;
-  const cardFare = Math.round(tokenFare * (1 - FARE_CHART.cardDiscountPercent / 100));
-  return { tokenFare, cardFare, savings: tokenFare - cardFare };
+  const cardFare = Math.round(tokenFare * (1 - currentDiscount / 100));
+  return { tokenFare, cardFare, savings: tokenFare - cardFare, isOffPeak: offPeak };
 }
 
 // Estimate distance for a route (list of station IDs with their lines)
