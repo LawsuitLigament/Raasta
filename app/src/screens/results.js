@@ -94,6 +94,10 @@ export function renderResultsScreen() {
         // Update content
         const content = screen.querySelector('#tab-content');
         if (content) {
+          content.style.animation = 'none';
+          void content.offsetWidth; // trigger reflow
+          content.style.animation = 'fadeSlideIn 150ms ease-out forwards';
+
           content.innerHTML = tabId === 'fastest'
             ? renderRouteDisplay(fastestRoute)
             : renderRouteDisplay(leastRoute);

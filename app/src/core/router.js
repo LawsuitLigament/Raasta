@@ -17,8 +17,9 @@ export function navigate(path, params = {}) {
   const screenEl = container.querySelector('.screen-container');
   
   if (screenEl) {
+    screenEl.style.transition = 'opacity 150ms ease-in-out, transform 150ms ease-in-out';
     screenEl.style.opacity = '0';
-    screenEl.style.transform = 'translateY(8px)';
+    screenEl.style.transform = 'translateY(4px)';
   }
   
   setTimeout(() => {
@@ -54,8 +55,9 @@ function renderCurrentRoute(params = {}) {
   }
   
   screenContainer.innerHTML = '';
-  screenContainer.style.opacity = '1';
-  screenContainer.style.transform = 'translateY(0)';
+  screenContainer.style.transition = 'none';
+  screenContainer.style.opacity = '0';
+  screenContainer.style.transform = 'translateY(4px)';
   
   const screen = renderFn(params);
   if (typeof screen === 'string') {
@@ -66,6 +68,12 @@ function renderCurrentRoute(params = {}) {
 
   // Scroll to top on navigation
   window.scrollTo(0, 0);
+
+  // Trigger reflow and apply enter transition
+  void screenContainer.offsetWidth;
+  screenContainer.style.transition = 'opacity 200ms ease-out, transform 200ms ease-out';
+  screenContainer.style.opacity = '1';
+  screenContainer.style.transform = 'translateY(0)';
 }
 
 function updateActiveNav(path) {
