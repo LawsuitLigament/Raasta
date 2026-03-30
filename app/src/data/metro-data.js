@@ -387,16 +387,16 @@ export function isOffPeak(date = new Date()) {
 // Average distance between stations in km (estimated)
 // Some lines have longer spacing (Airport Express, extensions)
 export const AVG_DISTANCE_KM = {
-  red: 1.3,
-  yellow: 1.4,
-  blue: 1.2,
-  blueBranch: 1.5,
-  green: 1.6,
-  greenBranch: 1.0,
-  violet: 1.3,
-  pink: 1.2,
-  magenta: 1.5,
-  grey: 2.5,
+  red: 1.2,
+  yellow: 1.35,
+  blue: 1.15,
+  blueBranch: 1.25,
+  green: 1.45,
+  greenBranch: 1.55,
+  violet: 1.4,
+  pink: 1.55,
+  magenta: 1.55,
+  grey: 1.7,
   orange: 4.5,
 };
 
