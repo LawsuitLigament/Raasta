@@ -71,7 +71,7 @@ function renderCurrentRoute(params = {}) {
 
   // Trigger reflow and apply enter transition
   void screenContainer.offsetWidth;
-  screenContainer.style.transition = 'opacity 200ms ease-out, transform 200ms ease-out';
+  screenContainer.style.transition = 'opacity 150ms ease-out, transform 150ms ease-out';
   screenContainer.style.opacity = '1';
   screenContainer.style.transform = 'translateY(0)';
 }
