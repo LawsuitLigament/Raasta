@@ -120,17 +120,41 @@ export function renderResultsScreen() {
     toggleMapBtn?.addEventListener('click', openMap);
     closeMapBtn?.addEventListener('click', closeMap);
     
-    // Swipe down to close logic for the handle
-    let touchStartY = 0;
+    // Swipe down on screen to open map
+    let screenTouchStartY = 0;
+    screen.addEventListener('touchstart', (e) => {
+      // Only detect swipe down if we're at the top of the scroll
+      if (window.scrollY <= 10) {
+        screenTouchStartY = e.touches[0].clientY;
+      } else {
+        screenTouchStartY = -1; // Disable
+      }
+    }, { passive: true });
+
+    screen.addEventListener('touchmove', (e) => {
+      if (screenTouchStartY === -1 || mapPanel.classList.contains('open')) return;
+      const touchY = e.touches[0].clientY;
+      const diffY = touchY - screenTouchStartY;
+      
+      // If pulled down more than 100px, open the map
+      if (diffY > 100) {
+        openMap();
+        screenTouchStartY = -1; // Prevent multiple triggers
+      }
+    }, { passive: true });
+    
+    // Swipe up to close logic for the handle (now at bottom)
+    let handleTouchStartY = 0;
     mapHandle?.addEventListener('touchstart', (e) => {
-      touchStartY = e.touches[0].clientY;
-    });
+      handleTouchStartY = e.touches[0].clientY;
+    }, { passive: true });
     mapHandle?.addEventListener('touchmove', (e) => {
       const touchY = e.touches[0].clientY;
-      if (touchY - touchStartY > 50) {
+      const diffY = handleTouchStartY - touchY; // Swipe up diff
+      if (diffY > 50) {
         closeMap();
       }
-    });
+    }, { passive: true });
 
     // Tab switching
     screen.querySelectorAll('.tab').forEach(tab => {
