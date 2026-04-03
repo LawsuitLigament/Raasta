@@ -2,6 +2,41 @@
    Component Styles
    ============================================ */
 
+/* --- Metro Map --- */
+.metro-map-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+  cursor: grab;
+  touch-action: none;
+  position: relative;
+}
+
+.metro-map-container:active {
+  cursor: grabbing;
+}
+
+.map-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.map-station-dot {
+  transition: r 0.2s ease, opacity 0.2s ease;
+}
+
+.map-lines line {
+  transition: opacity 0.2s ease, stroke-width 0.2s ease;
+}
+
+.map-labels text {
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
 /* --- Header / App Bar --- */
 .app-header {
   position: sticky;
