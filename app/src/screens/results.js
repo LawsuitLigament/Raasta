@@ -7,6 +7,7 @@ import { STATIONS } from '../data/metro-data.js';
 import { findFastestRoute } from '../algorithms/dijkstra.js';
 import { findLeastInterchangesRoute } from '../algorithms/bfs.js';
 import { renderRouteDisplay } from '../components/route-display.js';
+import { renderMetroMap } from '../components/metro-map.js';
 import { navigate } from '../core/router.js';
 
 export function renderResultsScreen() {
@@ -48,6 +49,8 @@ export function renderResultsScreen() {
   const toName = STATIONS[toStation]?.name || toStation;
   const activeTab = state.activeTab || 'fastest';
 
+  const activeRoute = activeTab === 'fastest' ? fastestRoute : leastRoute;
+
   screen.innerHTML = `
     <div class="container" style="padding-top: var(--space-lg);">
       <!-- Back + Route Header -->
@@ -57,6 +60,7 @@ export function renderResultsScreen() {
           <div style="font-size: var(--font-size-sm); font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${fromName}</div>
           <div style="font-size: var(--font-size-xs); color: var(--text-muted);">→ ${toName}</div>
         </div>
+        <button class="icon-btn" id="toggle-map-btn" aria-label="View Map">🗺️</button>
       </div>
 
       <!-- Tabs -->
@@ -71,7 +75,19 @@ export function renderResultsScreen() {
 
       <!-- Tab Content -->
       <div id="tab-content" style="margin-top: var(--space-lg); padding-bottom: var(--space-2xl);">
-        ${activeTab === 'fastest' ? renderRouteDisplay(fastestRoute) : renderRouteDisplay(leastRoute)}
+        ${renderRouteDisplay(activeRoute)}
+      </div>
+    </div>
+    
+    <!-- Sliding Map Panel -->
+    <div class="map-sliding-panel" id="map-panel">
+      <div class="map-panel-header">
+        <div class="map-panel-handle"></div>
+        <span style="font-weight: 600;">Interactive Map</span>
+        <button class="icon-btn" id="close-map-btn" aria-label="Close Map">✕</button>
+      </div>
+      <div class="map-container-wrapper" id="map-container-wrapper">
+        <!-- Map will be rendered here -->
       </div>
     </div>
   `;
@@ -80,6 +96,41 @@ export function renderResultsScreen() {
   requestAnimationFrame(() => {
     // Back button
     screen.querySelector('#results-back')?.addEventListener('click', () => navigate('home'));
+
+    // Map toggle logic
+    const mapPanel = screen.querySelector('#map-panel');
+    const mapWrapper = screen.querySelector('#map-container-wrapper');
+    const toggleMapBtn = screen.querySelector('#toggle-map-btn');
+    const closeMapBtn = screen.querySelector('#close-map-btn');
+    const mapHandle = screen.querySelector('.map-panel-handle');
+
+    const openMap = () => {
+      // Re-render map with latest route when opening
+      const currentActiveTab = getState().activeTab || 'fastest';
+      const currentRoute = currentActiveTab === 'fastest' ? fastestRoute : leastRoute;
+      mapWrapper.innerHTML = '';
+      mapWrapper.appendChild(renderMetroMap(currentRoute));
+      mapPanel.classList.add('open');
+    };
+
+    const closeMap = () => {
+      mapPanel.classList.remove('open');
+    };
+
+    toggleMapBtn?.addEventListener('click', openMap);
+    closeMapBtn?.addEventListener('click', closeMap);
+    
+    // Swipe down to close logic for the handle
+    let touchStartY = 0;
+    mapHandle?.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+    });
+    mapHandle?.addEventListener('touchmove', (e) => {
+      const touchY = e.touches[0].clientY;
+      if (touchY - touchStartY > 50) {
+        closeMap();
+      }
+    });
 
     // Tab switching
     screen.querySelectorAll('.tab').forEach(tab => {
@@ -101,6 +152,13 @@ export function renderResultsScreen() {
           content.innerHTML = tabId === 'fastest'
             ? renderRouteDisplay(fastestRoute)
             : renderRouteDisplay(leastRoute);
+        }
+      });
+    });
+  });
+
+  return screen;
+}
         }
       });
     });
