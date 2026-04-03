@@ -16,6 +16,7 @@ export const LINES = {
   magenta: { id: 'magenta', name: 'Magenta Line', color: '#E91E63', textColor: '#fff' },
   grey: { id: 'grey', name: 'Grey Line', color: '#95A5A6', textColor: '#fff' },
   orange: { id: 'orange', name: 'Airport Express', color: '#E67E22', textColor: '#fff' },
+  golden: { id: 'golden', name: 'Golden Line', color: '#D4AF37', textColor: '#000' },
 };
 
 // All line station sequences (ordered)
@@ -102,7 +103,12 @@ export const LINE_STATIONS = {
     'majlis-park'
   ],
   magenta: [
-    'janakpuri-west', 'dabri-mor', 'dashrath-puri', 'palam',
+    'rk-ashram-marg', 'nabi-karim', 'sadar-bazar', 'pul-bangash', 'ghanta-ghar',
+    'derawal-nagar', 'ashok-vihar', 'azadpur', 'majlis-park', 'bhalaswa',
+    'haiderpur-badli-mor', 'north-pitampura', 'prashant-vihar', 'pitampura',
+    'deepali-chowk', 'pushpanjali', 'west-enclave', 'mangol-puri', 'peeragarhi',
+    'paschim-vihar', 'keshopur', 'krishna-park-ext', 'janakpuri-west',
+    'dabri-mor', 'dashrath-puri', 'palam',
     'sadar-bazar-cantonment', 'terminal-1-igi', 'shankar-vihar',
     'vasant-vihar', 'munirka', 'rk-puram', 'iit-delhi', 'hauz-khas',
     'panchsheel-park', 'chirag-delhi', 'greater-kailash',
@@ -116,6 +122,12 @@ export const LINE_STATIONS = {
   orange: [
     'new-delhi', 'shivaji-stadium', 'dhaula-kuan', 'delhi-aerocity',
     'igi-airport-t3', 'dwarka-sector-21', 'yashobhoomi-dwarka-sector-25'
+  ],
+  golden: [
+    'delhi-aerocity', 'mahipalpur', 'vasant-kunj', 'kishangarh',
+    'chhattarpur', 'chhattarpur-mandir', 'ignou', 'neb-sarai',
+    'saket-g-block', 'ambedkar-nagar', 'khanpur', 'sangam-vihar-tigri',
+    'anandmayee-marg-junction', 'tughlakabad-railway-colony', 'tughlakabad'
   ]
 };
 
@@ -261,6 +273,15 @@ const stationNames = {
   'jharoda-majra': 'Jharoda Majra', 'burari': 'Burari',
 
   // Magenta Line
+  'rk-ashram-marg': 'RK Ashram Marg', 'nabi-karim': 'Nabi Karim', 'sadar-bazar': 'Sadar Bazar',
+  'pul-bangash': 'Pul Bangash', 'ghanta-ghar': 'Ghanta Ghar', 'derawal-nagar': 'Derawal Nagar',
+  'ashok-vihar': 'Ashok Vihar', 'azadpur': 'Azadpur', 'majlis-park': 'Majlis Park',
+  'bhalaswa': 'Bhalaswa', 'haiderpur-badli-mor': 'Haiderpur Badli Mor',
+  'north-pitampura': 'North Pitampura', 'prashant-vihar': 'Prashant Vihar',
+  'pitampura': 'Pitampura', 'deepali-chowk': 'Deepali Chowk', 'pushpanjali': 'Pushpanjali',
+  'west-enclave': 'West Enclave', 'mangol-puri': 'Mangol Puri', 'peeragarhi': 'Peeragarhi',
+  'paschim-vihar': 'Paschim Vihar', 'keshopur': 'Keshopur', 'krishna-park-ext': 'Krishna Park Extension',
+  'janakpuri-west': 'Janakpuri West',
   'dabri-mor': 'Dabri Mor - Janakpuri South', 'dashrath-puri': 'Dashrath Puri',
   'palam': 'Palam', 'sadar-bazar-cantonment': 'Sadar Bazar Cantonment',
   'terminal-1-igi': 'Terminal 1 - IGI Airport', 'shankar-vihar': 'Shankar Vihar',
@@ -280,6 +301,14 @@ const stationNames = {
   'shivaji-stadium': 'Shivaji Stadium', 'dhaula-kuan': 'Dhaula Kuan (South Campus)',
   'delhi-aerocity': 'Delhi Aerocity', 'igi-airport-t3': 'IGI Airport (T3)',
   'yashobhoomi-dwarka-sector-25': 'Yashobhoomi Dwarka Sector 25',
+
+  // Golden Line
+  'delhi-aerocity': 'Delhi Aerocity', 'mahipalpur': 'Mahipalpur', 'vasant-kunj': 'Vasant Kunj',
+  'kishangarh': 'Kishangarh', 'chhattarpur': 'Chhattarpur', 'chhattarpur-mandir': 'Chhattarpur Mandir',
+  'ignou': 'IGNOU', 'neb-sarai': 'Neb Sarai', 'saket-g-block': 'Saket G-Block',
+  'ambedkar-nagar': 'Ambedkar Nagar', 'khanpur': 'Khanpur', 'sangam-vihar-tigri': 'Sangam Vihar - Tigri',
+  'anandmayee-marg-junction': 'Anandmayee Marg Junction', 'tughlakabad-railway-colony': 'Tughlakabad Railway Colony',
+  'tughlakabad': 'Tughlakabad',
 };
 
 // Register all stations with their lines
