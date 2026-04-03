@@ -159,10 +159,3 @@ export function renderResultsScreen() {
 
   return screen;
 }
-        }
-      });
-    });
-  });
-
-  return screen;
-}
