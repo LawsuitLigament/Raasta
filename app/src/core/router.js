@@ -6,6 +6,17 @@ const routes = {};
 let currentRoute = null;
 let appContainer = null;
 
+import { updateHeaderTitle } from '../components/header.js';
+
+const ROUTE_TITLES = {
+  'home': 'Find Route',
+  'results': 'Route Result',
+  'stations': 'All Stations',
+  'station-detail': 'Station Detail',
+  'fare': 'Fare Calculator',
+  'settings': 'Settings'
+};
+
 export function registerRoute(path, renderFn) {
   routes[path] = renderFn;
 }
@@ -16,6 +27,9 @@ export function navigate(path, params = {}) {
   const container = getAppContainer();
   const screenEl = container.querySelector('.screen-container');
   
+  // Update header title
+  updateHeaderTitle(ROUTE_TITLES[path] || 'Delhi Metro');
+
   if (screenEl) {
     screenEl.style.transition = 'opacity 150ms ease-in-out, transform 150ms ease-in-out';
     screenEl.style.opacity = '0';

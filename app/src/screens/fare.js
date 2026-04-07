@@ -12,9 +12,8 @@ export function renderFareScreen() {
   screen.id = 'fare-screen';
 
   screen.innerHTML = `
-    <div class="container" style="padding-top: var(--space-lg);">
-      <h1 class="heading-2" style="margin-bottom: var(--space-xs);">Fare Calculator</h1>
-      <p class="text-caption" style="margin-bottom: var(--space-xl);">Check token and DMRC card fares</p>
+    <div class="container" style="padding-top: var(--space-xl);">
+      <p class="text-caption" style="margin-bottom: var(--space-xl); text-align: center;">Check token and DMRC card fares between any two stations</p>
 
       <div class="card card-elevated" style="margin-bottom: var(--space-xl);">
         <div id="fare-from-container"></div>

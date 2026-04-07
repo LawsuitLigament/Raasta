@@ -116,9 +116,10 @@ function renderStationList(route) {
       html += `
         <div class="station-route-item">
           <div class="station-line-track">
-            <div class="${dotClass}" style="border-color: ${segment.lineColor}"></div>
+            ${!isFirst ? `<div class="station-connector" style="background-color: ${segment.lineColor}; bottom: 50%;"></div>` : ''}
             ${!isLast || segIdx < route.segments.length - 1 ? 
-              `<div class="station-connector" style="background-color: ${segment.lineColor}"></div>` : ''}
+              `<div class="station-connector" style="background-color: ${segment.lineColor}; top: 50%;"></div>` : ''}
+            <div class="${dotClass}" style="border-color: ${segment.lineColor}"></div>
           </div>
           <div class="station-info">
             <div class="station-name-route ${isFirst ? 'start-station' : ''} ${isLast ? 'end-station' : ''}">${station?.name || stationId}</div>

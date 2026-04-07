@@ -6,6 +6,7 @@ import { createSearchInput } from '../components/search-input.js';
 import { STATIONS } from '../data/metro-data.js';
 import { getState, setState } from '../core/state.js';
 import { navigate } from '../core/router.js';
+import { getSavedRoutes, deleteRoute } from '../core/persistence.js';
 
 export function renderHomeScreen() {
   const screen = document.createElement('div');
@@ -17,11 +18,8 @@ export function renderHomeScreen() {
   searchCard.className = 'container';
   searchCard.innerHTML = `
     <div style="padding-top: var(--space-xl);">
-      <div style="text-align: center; margin-bottom: var(--space-2xl);">
-        <h1 class="heading-1" style="margin-bottom: var(--space-xs);">
-          Find Your Route
-        </h1>
-        <p class="text-caption">Plan your Delhi Metro journey in seconds</p>
+      <div style="text-align: center; margin-bottom: var(--space-xl);">
+        <p class="text-caption">Plan your Delhi Metro journey with ease</p>
       </div>
       
       <div class="card card-elevated" id="search-card" style="position: relative;">
@@ -40,38 +38,8 @@ export function renderHomeScreen() {
         <div id="route-error" style="display: none; margin-top: var(--space-md); text-align: center; color: var(--accent-danger); font-size: var(--font-size-sm);"></div>
       </div>
       
-      <!-- Quick Info Cards -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-top: var(--space-xl);">
-        <div class="card" id="quick-fare" style="cursor: pointer; text-align: center;">
-          <div style="font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary);">Fare Calculator</div>
-          <div style="font-size: var(--font-size-xs); color: var(--text-muted);">Check metro fares</div>
-        </div>
-        <div class="card" id="quick-stations" style="cursor: pointer; text-align: center;">
-          <div style="font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary);">All Stations</div>
-          <div style="font-size: var(--font-size-xs); color: var(--text-muted);">Browse metro stations</div>
-        </div>
-      </div>
-      
-      <!-- Metro Network Stats -->
-      <div class="card" style="margin-top: var(--space-md); margin-bottom: var(--space-2xl);">
-        <div style="text-align: center; margin-bottom: var(--space-md);">
-          <div style="font-size: var(--font-size-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">Delhi Metro Network 2026</div>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); text-align: center;">
-          <div>
-            <div style="font-size: var(--font-size-lg); font-weight: 800; color: var(--accent-primary);">10</div>
-            <div style="font-size: var(--font-size-xs); color: var(--text-muted);">Lines</div>
-          </div>
-          <div>
-            <div style="font-size: var(--font-size-lg); font-weight: 800; color: var(--accent-primary);">280+</div>
-            <div style="font-size: var(--font-size-xs); color: var(--text-muted);">Stations</div>
-          </div>
-          <div>
-            <div style="font-size: var(--font-size-lg); font-weight: 800; color: var(--accent-primary);">400+</div>
-            <div style="font-size: var(--font-size-xs); color: var(--text-muted);">km Network</div>
-          </div>
-        </div>
-      </div>
+      <!-- Saved Routes Dropdown Container -->
+      <div id="saved-routes-container" style="margin-top: var(--space-xl); margin-bottom: var(--space-2xl);"></div>
     </div>
   `;
 
@@ -120,6 +88,80 @@ export function renderHomeScreen() {
       setState({ fromStation: toStation, toStation: fromStation });
     });
 
+    // Saved Routes Logic
+    const savedContainer = screen.querySelector('#saved-routes-container');
+    const updateSavedRoutes = () => {
+      const routes = getSavedRoutes();
+      if (routes.length === 0) {
+        savedContainer.innerHTML = '';
+        return;
+      }
+
+      savedContainer.innerHTML = `
+        <div class="saved-routes-dropdown" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
+          <button class="btn btn-ghost btn-full" id="toggle-saved-btn" style="display: flex; justify-content: space-between; padding: var(--space-md) var(--space-lg); border-radius: 0;">
+            <span>Saved Routes (${routes.length})</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="saved-chevron" style="transition: transform var(--transition-fast);">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div id="saved-list" class="saved-list hidden" style="border-top: 1px solid var(--border-subtle); max-height: 200px; overflow-y: auto;">
+            ${routes.map(r => `
+              <div class="saved-item" data-id="${r.id}" style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--border-subtle); cursor: pointer;">
+                <div class="saved-item-info" style="flex: 1; min-width: 0;">
+                  <div style="font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.fromName}</div>
+                  <div style="font-size: var(--font-size-xs); color: var(--text-muted);">→ ${r.toName}</div>
+                </div>
+                <button class="delete-saved-btn" data-id="${r.id}" style="color: var(--text-muted); background: none; border: none; padding: var(--space-xs); font-size: 1.1rem; flex-shrink: 0;" title="Delete">×</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      const toggleBtn = savedContainer.querySelector('#toggle-saved-btn');
+      const savedList = savedContainer.querySelector('#saved-list');
+      const chevron = savedContainer.querySelector('#saved-chevron');
+
+      toggleBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        savedList?.classList.toggle('hidden');
+        if (chevron) {
+          chevron.style.transform = savedList?.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+      });
+
+      // Selection logic
+      savedContainer.querySelectorAll('.saved-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          if (e.target.classList.contains('delete-saved-btn')) return;
+          const routeId = item.dataset.id;
+          const route = routes.find(r => r.id === routeId);
+          if (route) {
+            fromInput.setStation(route.from, route.fromName);
+            toInput.setStation(route.to, route.toName);
+            setState({ fromStation: route.from, toStation: route.to });
+            savedList?.classList.add('hidden');
+            if (chevron) {
+              chevron.style.transform = 'rotate(0deg)';
+            }
+          }
+        });
+      });
+
+      // Delete logic
+      savedContainer.querySelectorAll('.delete-saved-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const routeId = btn.dataset.id;
+          deleteRoute(routeId);
+          updateSavedRoutes();
+        });
+      });
+    };
+
+    updateSavedRoutes();
+
     // Find Route button
     const findBtn = screen.querySelector('#find-route-btn');
     const errorEl = screen.querySelector('#route-error');
@@ -142,10 +184,6 @@ export function renderHomeScreen() {
       setState({ fromStation: from, toStation: to });
       navigate('results');
     });
-
-    // Quick action cards
-    screen.querySelector('#quick-fare')?.addEventListener('click', () => navigate('fare'));
-    screen.querySelector('#quick-stations')?.addEventListener('click', () => navigate('stations'));
   });
 
   return screen;

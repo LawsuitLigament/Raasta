@@ -13,8 +13,7 @@ export function renderStationsScreen() {
   const allStations = getAllStationsSorted();
 
   screen.innerHTML = `
-    <div class="container" style="padding-top: var(--space-lg);">
-      <h1 class="heading-2" style="margin-bottom: var(--space-lg);">All Stations</h1>
+    <div class="container" style="padding-top: var(--space-xl);">
       
       <!-- Search -->
       <div class="input-wrapper" style="margin-bottom: var(--space-lg);">

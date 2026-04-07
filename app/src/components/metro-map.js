@@ -18,7 +18,7 @@ export function renderMetroMap(activeRoute = null) {
   imgWrapper.style.justifyContent = 'center';
 
   const img = document.createElement('img');
-  img.src = '/delhi-metro-map.png';
+  img.src = '/delhi-metro-map.svg';
   img.alt = 'Delhi Metro Map';
   img.className = 'map-static-img';
   img.style.maxWidth = 'none'; // Allow zooming beyond container
@@ -36,9 +36,9 @@ export function renderMetroMap(activeRoute = null) {
   let isPanning = false;
   let startX = 0;
   let startY = 0;
-  let currentX = -500; // Start slightly panned
-  let currentY = -500;
-  let scale = 0.5; // Start zoomed out
+  let scale = 0.4; // Start zoomed out to fit better
+  let currentX = (window.innerWidth || window.screen.width || 375) * (1 - scale) / 2;
+  let currentY = (window.innerHeight || window.screen.height || 700) * (1 - scale) / 2;
   
   const updateTransform = () => {
     imgWrapper.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;

@@ -40,17 +40,27 @@ jobs:
       working-directory: ./app
       run: npx cap sync android
 
-    - name: Build APK (Debug)
+    - name: Build APK (Release)
       working-directory: ./app/android
       run: |
         chmod +x ./gradlew
-        ./gradlew assembleDebug --no-daemon
+        ./gradlew assembleRelease --no-daemon
 
-    - name: Upload APK
+    - name: Sign APK
+      uses: r0adkll/sign-android-release@v1
+      id: sign_app
+      with:
+        releaseDirectory: app/android/app/build/outputs/apk/release
+        signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_CONTENT }}
+        alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+        keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+    - name: Upload Signed APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug
-        path: app/android/app/build/outputs/apk/debug/app-debug.apk
+        name: app-release
+        path: ${{ steps.sign_app.outputs.signedReleaseFile }}
 
     - name: Create GitHub Release
       if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -58,6 +68,6 @@ jobs:
       with:
         tag_name: "v1.0.${{ github.run_number }}"
         name: "Release v1.0.${{ github.run_number }}"
-        files: app/android/app/build/outputs/apk/debug/app-debug.apk
+        files: ${{ steps.sign_app.outputs.signedReleaseFile }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

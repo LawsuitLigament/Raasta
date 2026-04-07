@@ -7,7 +7,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: var(--bg-secondary);
+  background-color: transparent;
   cursor: grab;
   touch-action: none;
   position: relative;
@@ -480,6 +480,7 @@
   width: 24px;
   flex-shrink: 0;
   position: relative;
+  align-self: stretch;
 }
 
 .station-dot {
@@ -490,6 +491,7 @@
   background: var(--bg-primary);
   z-index: 2;
   flex-shrink: 0;
+  margin-top: 4px;
 }
 
 .station-dot.start,
@@ -497,6 +499,7 @@
   width: 18px;
   height: 18px;
   border-width: 4px;
+  margin-top: 2px;
 }
 
 .station-dot.interchange {
@@ -504,12 +507,27 @@
   height: 18px;
   border-width: 3px;
   background: var(--accent-warning);
+  margin-top: 2px;
 }
 
 .station-connector {
   width: 3px;
-  flex: 1;
-  min-height: 20px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+/* Specific connector adjustments */
+.station-route-item:first-child .station-connector {
+  top: 10px;
+}
+
+.station-route-item:last-child .station-connector {
+  bottom: auto;
+  height: 10px;
 }
 
 .station-info {
