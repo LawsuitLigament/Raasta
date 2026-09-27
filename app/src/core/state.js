@@ -8,6 +8,7 @@ const state = {
   fastestRoute: null,
   leastInterchangesRoute: null,
   activeTab: 'fastest', // 'fastest' | 'least'
+  focusHomeField: null, // 'from' | 'to' | null
 };
 
 const listeners = new Set();

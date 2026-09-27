@@ -14,6 +14,7 @@
 - **Fastest route** — the route minimizing estimated travel time, calculated by Dijkstra’s algorithm.
 - **Least-interchange route** — the route minimizing line changes, with travel time used as the secondary preference, calculated by modified BFS.
 - **Saved route** — a source/destination pair stored in browser `localStorage`; route calculations are performed again when needed.
+- **Quick destination search** — a bottom-sheet station search opened from the collapsed floating navigation. With an origin selected, choosing a station calculates a route immediately; without one, it fills the destination and focuses the origin field.
 
 ## Runtime flow
 
@@ -40,6 +41,7 @@ These are planning estimates and are not official live-service data.
 - `algorithms/route-result.js` owns route-result invariants and derived display values.
 - `data/metro-network.js` is the caller-facing interface for network facts and policies.
 - `core/router.js` owns navigation; header and bottom navigation receive navigation as a callback rather than importing the router.
+- `components/header.js` owns the floating navigation state, scroll collapse, map-mode vertical rail, and quick-search entry point.
 
 ## Known limitations
 

@@ -9,6 +9,7 @@ Raasta is a client-side Delhi Metro route planner packaged as a Vite PWA and Cap
 - Shows travel time, distance, stations, fares, transfers, directions, and exit gates.
 - Saves routes in browser `localStorage`.
 - Includes station search, station details, theme switching, offline support, and a pan-and-zoom metro map.
+- Provides a floating, scroll-aware navigation bar with quick destination search.
 
 ## Project layout
 

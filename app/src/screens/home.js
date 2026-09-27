@@ -48,6 +48,7 @@ export function renderHomeScreen() {
   // Create search inputs after DOM is attached
   requestAnimationFrame(() => {
     const state = getState();
+    const focusHomeField = state.focusHomeField;
 
     const fromInput = createSearchInput({
       id: 'from-station',
@@ -74,6 +75,11 @@ export function renderHomeScreen() {
     const toContainer = screen.querySelector('#to-input-container');
     if (fromContainer) fromContainer.appendChild(fromInput);
     if (toContainer) toContainer.appendChild(toInput);
+
+    if (focusHomeField) {
+      setState({ focusHomeField: null });
+      (focusHomeField === 'from' ? fromInput : toInput).focus();
+    }
 
     // Swap button
     const swapBtn = screen.querySelector('#swap-btn');

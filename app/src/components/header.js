@@ -3,11 +3,19 @@
 // ============================================
 
 import { getTheme, toggleTheme } from '../core/theme.js';
+import { createQuickStationSearch } from './quick-station-search.js';
 
 // SVG Icons
-const SUN_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="4.22" x2="19.78" y2="5.64"/></svg>`;
-
+const SUN_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="4.22" x2="19.78" y2="5.64"/></svg>`;
 const MOON_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+const NAV_ICONS = {
+  route: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M7.5 16.5 16.5 7.5"/><path d="M9 6h3a3 3 0 0 1 3 3v3"/></svg>`,
+  fare: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h8M8 13h5M8 17h3"/></svg>`,
+  stations: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="15" rx="3"/><path d="M8 18 6 21M16 18l2 3M8 8h8M8 12h.01M16 12h.01"/><path d="M9 21h6"/></svg>`,
+  settings: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="m19.4 15 .1.1a2 2 0 1 1-2.8 2.8l-.1-.1a2 2 0 0 0-3.4 1.4v.3a2 2 0 1 1-4 0v-.2A2 2 0 0 0 5.8 18l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A2 2 0 0 0 1.6 12.6v-.2a2 2 0 1 1 4 0v.2a2 2 0 0 0 3.4-1.4v-.3a2 2 0 1 1 4 0v.2a2 2 0 0 0 3.4 1.4Z"/></svg>`,
+  search: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>`,
+};
 
 export function renderHeader(navigate) {
   const header = document.createElement('header');
@@ -16,10 +24,10 @@ export function renderHeader(navigate) {
 
   header.innerHTML = `
     <div class="app-header-inner">
-      <div class="app-logo" id="header-logo">
+      <button class="app-logo" id="header-logo" type="button" aria-label="Go to route planner">
         <span class="app-logo-icon">DMRC</span>
         <span id="app-header-title">Delhi Metro</span>
-      </div>
+      </button>
       <div class="header-actions">
         <button class="icon-btn" id="theme-toggle-btn" aria-label="Toggle theme" title="Toggle theme">
           ${getTheme() === 'mocha' ? SUN_ICON : MOON_ICON}
@@ -28,12 +36,7 @@ export function renderHeader(navigate) {
     </div>
   `;
 
-  // Logo click → go home
-  header.querySelector('#header-logo').addEventListener('click', () => {
-    navigate('home');
-  });
-
-  // Theme toggle
+  header.querySelector('#header-logo').addEventListener('click', () => navigate('home'));
   header.querySelector('#theme-toggle-btn').addEventListener('click', () => {
     const newTheme = toggleTheme();
     header.querySelector('#theme-toggle-btn').innerHTML = newTheme === 'mocha' ? SUN_ICON : MOON_ICON;
@@ -42,17 +45,11 @@ export function renderHeader(navigate) {
   return header;
 }
 
-/**
- * Updates the header title dynamically
- * @param {string} title 
- */
 export function updateHeaderTitle(title) {
   const titleEl = document.getElementById('app-header-title');
   if (titleEl) {
-    // Fade transition for title
     titleEl.style.opacity = '0';
     titleEl.style.transform = 'translateY(-2px)';
-    
     setTimeout(() => {
       titleEl.textContent = title;
       titleEl.style.opacity = '1';
@@ -69,30 +66,139 @@ export function renderBottomNav(navigate) {
   const nav = document.createElement('nav');
   nav.className = 'bottom-nav';
   nav.id = 'bottom-nav';
-
+  nav.setAttribute('aria-label', 'Primary navigation');
   nav.innerHTML = `
     <div class="bottom-nav-inner">
-      <button class="nav-item active" data-path="home" id="nav-home">
-        <span>Route</span>
+      <button class="nav-item active" data-path="home" id="nav-home" type="button" data-label="Route" title="Route">
+        ${NAV_ICONS.route}<span class="sr-only">Route</span>
       </button>
-      <button class="nav-item" data-path="fare" id="nav-fare">
-        <span>Fare</span>
+      <button class="nav-item" data-path="fare" id="nav-fare" type="button" data-label="Fare" title="Fare">
+        ${NAV_ICONS.fare}<span class="sr-only">Fare</span>
       </button>
-      <button class="nav-item" data-path="stations" id="nav-stations">
-        <span>Stations</span>
+      <button class="nav-item" data-path="stations" id="nav-stations" type="button" data-label="Stations" title="Stations">
+        ${NAV_ICONS.stations}<span class="sr-only">Stations</span>
       </button>
-      <button class="nav-item" data-path="settings" id="nav-settings">
-        <span>Settings</span>
+      <button class="nav-item" data-path="settings" id="nav-settings" type="button" data-label="Settings" title="Settings">
+        ${NAV_ICONS.settings}<span class="sr-only">Settings</span>
+      </button>
+      <button class="quick-search-trigger" id="quick-search-trigger" type="button" aria-label="Open quick station search" title="Search destination">
+        ${NAV_ICONS.search}<span class="sr-only">Search destination</span>
       </button>
     </div>
   `;
 
+  const quickSearch = createQuickStationSearch(navigate, () => {
+    nav.querySelector('#quick-search-trigger')?.focus();
+  });
+  const trigger = nav.querySelector('#quick-search-trigger');
+
   nav.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const path = item.dataset.path;
-      navigate(path);
-    });
+    item.addEventListener('click', () => navigate(item.dataset.path));
+  });
+
+  trigger.addEventListener('click', () => {
+    if (nav.classList.contains('map-mode')) {
+      nav.classList.toggle('rail-expanded');
+      nav.classList.remove('collapsed');
+      return;
+    }
+    nav.classList.remove('collapsed');
+    quickSearch.open();
+  });
+
+  setupNavTooltips(nav);
+  setupNavScroll(nav, quickSearch);
+
+  window.addEventListener('metro-map:open', () => {
+    nav.classList.add('map-mode', 'collapsed');
+    nav.classList.remove('rail-expanded');
+  });
+  window.addEventListener('metro-map:close', () => {
+    nav.classList.remove('map-mode', 'rail-expanded');
+    syncCollapsedState(nav);
   });
 
   return nav;
+}
+
+function setupNavScroll(nav, quickSearch) {
+  let lastScrollY = window.scrollY;
+  let direction = null;
+  let directionDistance = 0;
+  let ticking = false;
+
+  const update = () => {
+    const currentScrollY = window.scrollY;
+    const delta = currentScrollY - lastScrollY;
+    lastScrollY = currentScrollY;
+    ticking = false;
+
+    if (nav.classList.contains('map-mode') || quickSearch.isOpen()) return;
+    if (nav.matches(':focus-within') || document.querySelector('.quick-search-sheet:focus-within')) return;
+
+    if (currentScrollY <= 10) {
+      nav.classList.remove('collapsed');
+      direction = null;
+      directionDistance = 0;
+      return;
+    }
+    if (Math.abs(delta) < 1) return;
+
+    const nextDirection = delta > 0 ? 'down' : 'up';
+    if (nextDirection !== direction) {
+      direction = nextDirection;
+      directionDistance = 0;
+    }
+    directionDistance += Math.abs(delta);
+
+    if (direction === 'down' && directionDistance >= 32) nav.classList.add('collapsed');
+    if (direction === 'up' && directionDistance >= 12) nav.classList.remove('collapsed');
+  };
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+}
+
+function syncCollapsedState(nav) {
+  if (window.scrollY <= 10) nav.classList.remove('collapsed');
+  else nav.classList.add('collapsed');
+}
+
+function setupNavTooltips(nav) {
+  const tooltip = document.createElement('div');
+  tooltip.className = 'nav-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  nav.appendChild(tooltip);
+  let holdTimer = null;
+  let activeItem = null;
+
+  const hide = () => {
+    window.clearTimeout(holdTimer);
+    tooltip.classList.remove('visible');
+    activeItem = null;
+  };
+  const show = item => {
+    activeItem = item;
+    tooltip.textContent = item.dataset.label || item.title;
+    tooltip.classList.add('visible');
+  };
+
+  nav.querySelectorAll('.nav-item, .quick-search-trigger').forEach(item => {
+    item.addEventListener('mouseenter', () => show(item));
+    item.addEventListener('mouseleave', hide);
+    item.addEventListener('focus', () => show(item));
+    item.addEventListener('blur', hide);
+    item.addEventListener('pointerdown', event => {
+      if (event.pointerType === 'touch') {
+        window.clearTimeout(holdTimer);
+        holdTimer = window.setTimeout(() => show(item), 500);
+      }
+    });
+    item.addEventListener('pointerup', hide);
+    item.addEventListener('pointercancel', hide);
+  });
 }

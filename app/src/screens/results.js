@@ -138,10 +138,12 @@ export function renderResultsScreen() {
       mapWrapper.innerHTML = '';
       mapWrapper.appendChild(renderMetroMap(currentRoute));
       mapPanel.classList.add('open');
+      window.dispatchEvent(new CustomEvent('metro-map:open'));
     };
 
     const closeMap = () => {
       mapPanel.classList.remove('open');
+      window.dispatchEvent(new CustomEvent('metro-map:close'));
     };
 
     toggleMapBtn?.addEventListener('click', openMap);

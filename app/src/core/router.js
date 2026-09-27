@@ -93,7 +93,10 @@ function renderCurrentRoute(params = {}) {
 function updateActiveNav(path) {
   document.querySelectorAll('.nav-item').forEach(item => {
     const navPath = item.dataset.path;
-    item.classList.toggle('active', navPath === path);
+    const isActive = navPath === path;
+    item.classList.toggle('active', isActive);
+    if (isActive) item.setAttribute('aria-current', 'page');
+    else item.removeAttribute('aria-current');
   });
 }
 

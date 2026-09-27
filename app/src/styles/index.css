@@ -436,7 +436,7 @@ img {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
   /* Animation removed to allow router-controlled swifter transitions */
 }
 
