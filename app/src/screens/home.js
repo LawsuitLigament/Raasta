@@ -3,7 +3,7 @@
 // ============================================
 
 import { createSearchInput } from '../components/search-input.js';
-import { STATIONS } from '../data/metro-data.js';
+import { STATIONS } from '../data/metro-network.js';
 import { getState, setState } from '../core/state.js';
 import { navigate } from '../core/router.js';
 import { getSavedRoutes, deleteRoute } from '../core/persistence.js';

@@ -3,9 +3,8 @@
 // ============================================
 
 import { getState, setState } from '../core/state.js';
-import { STATIONS } from '../data/metro-data.js';
-import { findFastestRoute } from '../algorithms/dijkstra.js';
-import { findLeastInterchangesRoute } from '../algorithms/bfs.js';
+import { STATIONS } from '../data/metro-network.js';
+import { planRoutes } from '../core/route-planner.js';
 import { renderRouteDisplay } from '../components/route-display.js';
 import { renderMetroMap } from '../components/metro-map.js';
 import { navigate } from '../core/router.js';
@@ -36,21 +35,14 @@ export function renderResultsScreen() {
     return screen;
   }
 
-  // Calculate routes
-  let fastestRoute = findFastestRoute(fromStation, toStation);
-  let leastRoute = findLeastInterchangesRoute(fromStation, toStation);
-
-  if (fastestRoute && leastRoute && fastestRoute.interchanges.length === leastRoute.interchanges.length) {
-    leastRoute = fastestRoute;
-  }
-
-  setState({ fastestRoute, leastInterchangesRoute: leastRoute });
+  const { fastestRoute, leastInterchangesRoute } = planRoutes(fromStation, toStation);
+  setState({ fastestRoute, leastInterchangesRoute });
 
   const fromName = STATIONS[fromStation]?.name || fromStation;
   const toName = STATIONS[toStation]?.name || toStation;
   const activeTab = state.activeTab || 'fastest';
 
-  const activeRoute = activeTab === 'fastest' ? fastestRoute : leastRoute;
+  const activeRoute = activeTab === 'fastest' ? fastestRoute : leastInterchangesRoute;
 
   screen.innerHTML = `
     <div class="container" style="padding-top: var(--space-lg);">
@@ -142,7 +134,7 @@ export function renderResultsScreen() {
     const openMap = () => {
       // Re-render map with latest route when opening
       const currentActiveTab = getState().activeTab || 'fastest';
-      const currentRoute = currentActiveTab === 'fastest' ? fastestRoute : leastRoute;
+      const currentRoute = currentActiveTab === 'fastest' ? fastestRoute : leastInterchangesRoute;
       mapWrapper.innerHTML = '';
       mapWrapper.appendChild(renderMetroMap(currentRoute));
       mapPanel.classList.add('open');
@@ -210,7 +202,7 @@ export function renderResultsScreen() {
 
           content.innerHTML = tabId === 'fastest'
             ? renderRouteDisplay(fastestRoute)
-            : renderRouteDisplay(leastRoute);
+            : renderRouteDisplay(leastInterchangesRoute);
         }
       });
     });

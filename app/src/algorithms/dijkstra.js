@@ -1,10 +1,12 @@
 // ============================================
-// Dijkstra's Algorithm — Fastest Route
+// Dijkstra's Algorithm â€” Fastest Route
 // Minimizes total travel time including
 // variable interchange transfer times
 // ============================================
 
-import { GRAPH, STATIONS, LINES, getTransferTime, AVG_DISTANCE_KM } from '../data/metro-data.js';
+import { getStationEdges, getStationLines } from '../data/metro-network.js';
+import { getTransferTime } from '../data/metro-network.js';
+import { buildRouteResult } from './route-result.js';
 
 class MinHeap {
   constructor() { this.heap = []; }
@@ -52,15 +54,15 @@ class MinHeap {
 
 export function findFastestRoute(sourceId, destId) {
   if (sourceId === destId) return null;
-  if (!GRAPH[sourceId] || !GRAPH[destId]) return null;
+  if (!getStationEdges(sourceId).length || !getStationEdges(destId).length) return null;
 
-  // State: (station, currentLine) — to track interchange costs
+  // State: (station, currentLine) â€” to track interchange costs
   const dist = {};
   const prev = {};
   const heap = new MinHeap();
 
   // Initialize: start from source on any line it belongs to
-  const sourceLines = STATIONS[sourceId].lines;
+  const sourceLines = getStationLines(sourceId);
   sourceLines.forEach(line => {
     const key = `${sourceId}|${line}`;
     dist[key] = 0;
@@ -78,7 +80,7 @@ export function findFastestRoute(sourceId, destId) {
     }
 
     // Explore neighbors on the SAME line
-    const edges = GRAPH[station] || [];
+    const edges = getStationEdges(station);
     for (const edge of edges) {
       if (edge.line !== line) continue;
       
@@ -93,7 +95,7 @@ export function findFastestRoute(sourceId, destId) {
     }
 
     // Explore interchanges: switch to a different line at this station
-    const stationLines = STATIONS[station].lines;
+    const stationLines = getStationLines(station);
     for (const otherLine of stationLines) {
       if (otherLine === line) continue;
       
@@ -130,80 +132,5 @@ function reconstructRoute(prev, endKey, sourceId, destId) {
   }
 
   // Build segments (group consecutive stations on the same line)
-  return buildRouteResult(path, sourceId, destId);
-}
-
-function buildRouteResult(path, sourceId, destId) {
-  if (path.length === 0) return null;
-
-  const segments = [];
-  let currentSegment = null;
-  let totalTime = 0;
-  let interchanges = [];
-  let totalDistance = 0;
-
-  for (let i = 0; i < path.length; i++) {
-    const node = path[i];
-
-    if (node.isTransfer) {
-      // This is a transfer at the same station
-      totalTime += node.transferTime || 0;
-      interchanges.push({
-        station: node.station,
-        stationName: STATIONS[node.station]?.name,
-        fromLine: node.fromLine,
-        toLine: node.toLine,
-        time: node.transferTime,
-      });
-      continue;
-    }
-
-    if (!currentSegment || currentSegment.line !== node.line) {
-      // Start new segment
-      if (currentSegment) {
-        segments.push(currentSegment);
-      }
-      currentSegment = {
-        line: node.line,
-        lineName: LINES[node.line]?.name || node.line,
-        lineColor: LINES[node.line]?.color || '#888',
-        stations: [node.station],
-        stationCount: 1,
-      };
-    } else {
-      currentSegment.stations.push(node.station);
-      currentSegment.stationCount++;
-      totalTime += 2; // ~2 min between stations
-    }
-  }
-
-  if (currentSegment) {
-    segments.push(currentSegment);
-  }
-
-  // Calculate total distance
-  segments.forEach(seg => {
-    const avgKm = AVG_DISTANCE_KM[seg.line] || 1.3;
-    totalDistance += (seg.stationCount - 1) * avgKm;
-  });
-
-  // Calculate total stations
-  const allStations = [];
-  segments.forEach(seg => {
-    seg.stations.forEach(s => {
-      if (!allStations.includes(s)) allStations.push(s);
-    });
-  });
-
-  return {
-    type: 'fastest',
-    segments,
-    interchanges,
-    totalTime,
-    totalStations: allStations.length,
-    totalDistance: Math.round(totalDistance * 10) / 10,
-    allStations,
-    source: sourceId,
-    dest: destId,
-  };
+  return buildRouteResult(path, sourceId, destId, 'fastest');
 }

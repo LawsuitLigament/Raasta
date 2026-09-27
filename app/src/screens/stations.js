@@ -2,7 +2,7 @@
 // Stations Screen — Browse All Stations
 // ============================================
 
-import { getAllStationsSorted, searchStations, LINES } from '../data/metro-data.js';
+import { getAllStationsSorted, searchStations, LINES } from '../data/metro-network.js';
 import { navigate } from '../core/router.js';
 
 export function renderStationsScreen() {

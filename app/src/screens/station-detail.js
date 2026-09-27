@@ -2,7 +2,7 @@
 // Station Detail Screen
 // ============================================
 
-import { STATIONS, LINES, LINE_STATIONS } from '../data/metro-data.js';
+import { STATIONS, LINES, LINE_STATIONS } from '../data/metro-network.js';
 import { navigate } from '../core/router.js';
 import { setState } from '../core/state.js';
 

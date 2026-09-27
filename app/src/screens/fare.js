@@ -3,8 +3,8 @@
 // ============================================
 
 import { createSearchInput } from '../components/search-input.js';
-import { STATIONS, calculateFare, FARE_CHART } from '../data/metro-data.js';
-import { findFastestRoute } from '../algorithms/dijkstra.js';
+import { calculateFare, FARE_CHART } from '../data/metro-network.js';
+import { planFastestRoute } from '../core/route-planner.js';
 
 export function renderFareScreen() {
   const screen = document.createElement('div');
@@ -47,7 +47,7 @@ export function renderFareScreen() {
                 const distLabel = slab.maxKm === Infinity
                   ? `> ${prevMax} km`
                   : `${prevMax}–${slab.maxKm} km`;
-                const cardFare = Math.round(slab.tokenFare * 0.9);
+                const cardFare = Math.round(slab.tokenFare * (1 - FARE_CHART.cardDiscountPercent / 100));
                 return `
                   <tr style="border-top: 1px solid var(--border-subtle);">
                     <td style="padding: var(--space-md) var(--space-lg); color: var(--text-primary);">${distLabel}</td>
@@ -60,7 +60,7 @@ export function renderFareScreen() {
           </table>
         </div>
         <p style="font-size: var(--font-size-xs); color: var(--text-muted); margin-top: var(--space-sm); text-align: center;">
-          DMRC Card / NCMC holders get 10% discount on token fares
+          DMRC Card / NCMC holders get ${FARE_CHART.cardDiscountPercent}% discount on token fares
         </p>
       </div>
     </div>
@@ -110,7 +110,7 @@ export function renderFareScreen() {
       errorEl.style.display = 'none';
 
       // Calculate route to get distance
-      const route = findFastestRoute(fromStation, toStation);
+      const route = planFastestRoute(fromStation, toStation);
       if (!route) {
         resultEl.innerHTML = `
           <div class="card" style="text-align: center; padding: var(--space-xl);">
@@ -142,7 +142,7 @@ export function renderFareScreen() {
             <div class="fare-card recommended">
               <span class="fare-type">DMRC Card</span>
               <span class="fare-amount"><span class="currency">₹</span>${fare.cardFare}</span>
-              <span class="fare-savings">Save ₹${fare.savings} (10%)</span>
+              <span class="fare-savings">Save ₹${fare.savings} (${fare.isOffPeak ? FARE_CHART.offPeakDiscountPercent : FARE_CHART.cardDiscountPercent}%)</span>
             </div>
           </div>
         </div>

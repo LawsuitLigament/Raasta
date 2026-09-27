@@ -6,7 +6,7 @@ import './styles/index.css';
 import './styles/components.css';
 import './styles/animations.css';
 
-import { registerRoute, initRouter } from './core/router.js';
+import { registerRoute, initRouter, navigate } from './core/router.js';
 import { initTheme } from './core/theme.js';
 import { renderHeader, renderBottomNav } from './components/header.js';
 import { renderHomeScreen } from './screens/home.js';
@@ -25,10 +25,10 @@ function init() {
   const app = document.getElementById('app');
   
   // Add header
-  app.prepend(renderHeader());
+  app.prepend(renderHeader(navigate));
   
   // Add bottom navigation
-  app.appendChild(renderBottomNav());
+  app.appendChild(renderBottomNav(navigate));
 
   // Register routes
   registerRoute('home', renderHomeScreen);

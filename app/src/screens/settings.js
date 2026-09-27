@@ -3,7 +3,7 @@
 // ============================================
 
 import { getTheme, toggleTheme } from '../core/theme.js';
-import { STATIONS, LINES } from '../data/metro-data.js';
+import { STATIONS, LINES } from '../data/metro-network.js';
 
 export function renderSettingsScreen() {
   const screen = document.createElement('div');

@@ -2,7 +2,7 @@
 // Search Input Component — Searchable Dropdown
 // ============================================
 
-import { searchStations, LINES } from '../data/metro-data.js';
+import { searchStations, LINES } from '../data/metro-network.js';
 
 export function createSearchInput({ id, label, icon, placeholder, onSelect, initialValue }) {
   const wrapper = document.createElement('div');

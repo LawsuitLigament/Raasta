@@ -1,8 +1,8 @@
 // ============================================
 // Delhi Metro Network Data — March 2026
 // ============================================
-// To update: Add/remove stations in the `lines` array and
-// update `connections` in the stations object. That's it!
+// To update the network: edit LINE_STATIONS and stationNames. The graph and
+// station registry are derived automatically from those two sources.
 
 export const LINES = {
   red: { id: 'red', name: 'Red Line', color: '#E74C3C', textColor: '#fff' },
@@ -447,15 +447,6 @@ export function calculateFare(distanceKm) {
   return { tokenFare, cardFare, savings: tokenFare - cardFare, isOffPeak: offPeak };
 }
 
-// Estimate distance for a route (list of station IDs with their lines)
-export function estimateDistance(segments) {
-  let totalKm = 0;
-  segments.forEach(seg => {
-    const avgKm = AVG_DISTANCE_KM[seg.line] || 1.3;
-    totalKm += (seg.stationCount - 1) * avgKm;
-  });
-  return Math.round(totalKm * 10) / 10;
-}
 
 // Get all station IDs sorted alphabetically by name
 export function getAllStationsSorted() {

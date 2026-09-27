@@ -1,14 +1,15 @@
 // ============================================
-// Modified BFS — Least Interchanges Route
+// Modified BFS â€” Least Interchanges Route
 // Prioritizes minimizing line switches
 // Secondary: minimize travel time
 // ============================================
 
-import { GRAPH, STATIONS, LINES, getTransferTime, AVG_DISTANCE_KM } from '../data/metro-data.js';
+import { getStationEdges, getStationLines } from '../data/metro-network.js';
+import { buildRouteResult } from './route-result.js';
 
 export function findLeastInterchangesRoute(sourceId, destId) {
   if (sourceId === destId) return null;
-  if (!GRAPH[sourceId] || !GRAPH[destId]) return null;
+  if (!getStationEdges(sourceId).length || !getStationEdges(destId).length) return null;
 
   // BFS where each "level" = one more interchange
   // State: { station, line, interchangeCount }
@@ -19,7 +20,7 @@ export function findLeastInterchangesRoute(sourceId, destId) {
 
   // Start: explore all lines the source station is on
   let currentLevel = [];
-  const sourceLines = STATIONS[sourceId].lines;
+  const sourceLines = getStationLines(sourceId);
   sourceLines.forEach(line => {
     const key = `${sourceId}|${line}`;
     visited.add(key);
@@ -44,7 +45,7 @@ export function findLeastInterchangesRoute(sourceId, destId) {
     // Phase 2: Find all interchange opportunities
     const nextLevel = [];
     for (const node of reachableOnCurrentLines) {
-      const stationLines = STATIONS[node.station].lines;
+      const stationLines = getStationLines(node.station);
       for (const otherLine of stationLines) {
         if (otherLine === node.line) continue;
         const key = `${node.station}|${otherLine}`;
@@ -70,7 +71,7 @@ export function findLeastInterchangesRoute(sourceId, destId) {
 }
 
 function expandOnSameLines(startNodes, visited, prev) {
-  // BFS on same line only — no interchanges
+  // BFS on same line only â€” no interchanges
   const queue = [...startNodes];
   const allReachable = [...startNodes];
   let head = 0;
@@ -78,7 +79,7 @@ function expandOnSameLines(startNodes, visited, prev) {
   while (head < queue.length) {
     const { station, line } = queue[head++];
     
-    const edges = GRAPH[station] || [];
+    const edges = getStationEdges(station);
     for (const edge of edges) {
       if (edge.line !== line) continue;
       const key = `${edge.to}|${line}`;
@@ -124,78 +125,5 @@ function reconstructLeastRoute(prev, endKey, sourceId, destId) {
     path.unshift({ station, line, isTransfer: false });
   }
 
-  return buildLeastRouteResult(path, sourceId, destId);
-}
-
-function buildLeastRouteResult(path, sourceId, destId) {
-  if (path.length === 0) return null;
-
-  const segments = [];
-  let currentSegment = null;
-  let totalTime = 0;
-  let interchanges = [];
-  let totalDistance = 0;
-
-  for (let i = 0; i < path.length; i++) {
-    const node = path[i];
-
-    if (node.isTransfer) {
-      const transferTime = getTransferTime(node.station, node.fromLine, node.toLine);
-      totalTime += transferTime;
-      interchanges.push({
-        station: node.station,
-        stationName: STATIONS[node.station]?.name,
-        fromLine: node.fromLine,
-        toLine: node.toLine,
-        time: transferTime,
-      });
-      continue;
-    }
-
-    if (!currentSegment || currentSegment.line !== node.line) {
-      if (currentSegment) {
-        segments.push(currentSegment);
-      }
-      currentSegment = {
-        line: node.line,
-        lineName: LINES[node.line]?.name || node.line,
-        lineColor: LINES[node.line]?.color || '#888',
-        stations: [node.station],
-        stationCount: 1,
-      };
-    } else {
-      currentSegment.stations.push(node.station);
-      currentSegment.stationCount++;
-      totalTime += 2;
-    }
-  }
-
-  if (currentSegment) {
-    segments.push(currentSegment);
-  }
-
-  // Calculate distance
-  segments.forEach(seg => {
-    const avgKm = AVG_DISTANCE_KM[seg.line] || 1.3;
-    totalDistance += (seg.stationCount - 1) * avgKm;
-  });
-
-  const allStations = [];
-  segments.forEach(seg => {
-    seg.stations.forEach(s => {
-      if (!allStations.includes(s)) allStations.push(s);
-    });
-  });
-
-  return {
-    type: 'leastInterchanges',
-    segments,
-    interchanges,
-    totalTime,
-    totalStations: allStations.length,
-    totalDistance: Math.round(totalDistance * 10) / 10,
-    allStations,
-    source: sourceId,
-    dest: destId,
-  };
+  return buildRouteResult(path, sourceId, destId, 'leastInterchanges');
 }

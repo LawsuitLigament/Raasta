@@ -2,7 +2,7 @@
 // Route Display Component
 // ============================================
 
-import { STATIONS, LINES, LINE_STATIONS, calculateFare, EXIT_GATES } from '../data/metro-data.js';
+import { STATIONS, LINE_STATIONS, calculateFare, EXIT_GATES } from '../data/metro-network.js';
 
 export function renderRouteDisplay(route) {
   if (!route) {
@@ -37,12 +37,12 @@ export function renderRouteDisplay(route) {
       <div class="fare-compare" style="margin-top: var(--space-md);">
         <div class="fare-card">
           <span class="fare-type">Token</span>
-          <span class="fare-amount"><span class="currency">₹</span>${fare.tokenFare}</span>
+          <span class="fare-amount"><span class="currency">â‚¹</span>${fare.tokenFare}</span>
         </div>
         <div class="fare-card recommended">
           <span class="fare-type">DMRC Card</span>
-          <span class="fare-amount"><span class="currency">₹</span>${fare.cardFare}</span>
-          <span class="fare-savings">Save ₹${fare.savings}</span>
+          <span class="fare-amount"><span class="currency">â‚¹</span>${fare.cardFare}</span>
+          <span class="fare-savings">Save â‚¹${fare.savings}</span>
         </div>
       </div>
 
@@ -66,13 +66,13 @@ function getDirectionInfo(segment) {
   const terminalName = STATIONS[terminalStationId]?.name || terminalStationId;
   const platform = isForward ? '1' : '2';
   
-  return `Platform ${platform} · Towards ${terminalName}`;
+  return `Platform ${platform} Â· Towards ${terminalName}`;
 }
 
 function renderStationList(route) {
   let html = '';
   let stationIndex = 0;
-  let cumulativeTime = 0;
+
 
   route.segments.forEach((segment, segIdx) => {
     const dirInfo = getDirectionInfo(segment);
@@ -84,10 +84,6 @@ function renderStationList(route) {
       const isInterchange = route.interchanges.some(ic => ic.station === stationId);
       const showInterchangeBanner = isInterchange && sIdx === segment.stations.length - 1 && segIdx < route.segments.length - 1;
 
-      // Update time logic
-      if (!isFirst && sIdx > 0) {
-        cumulativeTime += 2; // Each station takes ~2 min
-      }
 
       // Find the interchange info for this station
       const interchangeInfo = route.interchanges.find(ic => ic.station === stationId);
@@ -123,23 +119,23 @@ function renderStationList(route) {
           </div>
           <div class="station-info">
             <div class="station-name-route ${isFirst ? 'start-station' : ''} ${isLast ? 'end-station' : ''}">${station?.name || stationId}</div>
-            ${isFirst ? `<div class="station-meta">Start · ${segment.lineName}<br/><span style="color: var(--text-primary); font-weight: 500;">${dirInfo}</span></div>` : ''}
+            ${isFirst ? `<div class="station-meta">Start Â· ${segment.lineName}<br/><span style="color: var(--text-primary); font-weight: 500;">${dirInfo}</span></div>` : ''}
             ${isLast && segIdx === route.segments.length - 1 ? `<div class="station-meta">Destination</div>${exitGateHtml}` : ''}
           </div>
           <div class="station-time" style="font-size: var(--font-size-xs); color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; padding-top: 1px; min-width: 40px; text-align: right;">
-            ${cumulativeTime} min
+            ${segment.times?.[sIdx] ?? 0} min
           </div>
         </div>
       `;
 
       // Show interchange banner after the last station of a segment (if not the final segment)
       if (showInterchangeBanner && interchangeInfo) {
-        cumulativeTime += interchangeInfo.time;
+
         const nextSegment = route.segments[segIdx + 1];
         const nextDirInfo = getDirectionInfo(nextSegment);
         html += `
           <div class="interchange-banner">
-            <span>Change to <strong>${nextSegment.lineName}</strong><br/><span style="font-size: var(--font-size-xs); opacity: 0.9;">${nextDirInfo}</span> · ${interchangeInfo.time} min transfer</span>
+            <span>Change to <strong>${nextSegment.lineName}</strong><br/><span style="font-size: var(--font-size-xs); opacity: 0.9;">${nextDirInfo}</span> Â· ${interchangeInfo.time} min transfer</span>
           </div>
         `;
       }
@@ -149,12 +145,4 @@ function renderStationList(route) {
   });
 
   return html;
-}
-
-function countTotalStations(route) {
-  let count = 0;
-  route.segments.forEach(seg => {
-    count += seg.stations.length;
-  });
-  return count;
 }
