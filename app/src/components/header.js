@@ -220,10 +220,6 @@ function setupNavTooltips(nav) {
   };
 
   nav.querySelectorAll('.nav-item, .quick-search-trigger').forEach(item => {
-    item.addEventListener('mouseenter', () => show(item));
-    item.addEventListener('mouseleave', hide);
-    item.addEventListener('focus', () => show(item));
-    item.addEventListener('blur', hide);
     item.addEventListener('pointerdown', event => {
       if (event.pointerType === 'touch') {
         window.clearTimeout(holdTimer);
@@ -231,6 +227,7 @@ function setupNavTooltips(nav) {
       }
     });
     item.addEventListener('pointerup', hide);
+    item.addEventListener('pointerleave', hide);
     item.addEventListener('pointercancel', hide);
   });
 }
