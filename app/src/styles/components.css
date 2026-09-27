@@ -105,11 +105,33 @@
 }
 
 .bottom-nav-inner {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 2px;
   padding: 6px;
+}
+
+/* Shared sliding pill inspired by Animata's Fluid Tabs. */
+.nav-active-indicator {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  z-index: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(0);
+  transition: opacity 180ms ease, transform 380ms cubic-bezier(0.22, 1, 0.36, 1), width 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-active-indicator.visible {
+  opacity: 1;
 }
 
 .nav-item,
@@ -126,6 +148,7 @@
   background: transparent;
   transition: opacity var(--transition-fast), transform var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
   position: relative;
+  z-index: 1;
   flex-shrink: 0;
 }
 
@@ -143,7 +166,6 @@
 
 .nav-item.active {
   color: var(--accent-primary);
-  background: var(--bg-surface);
 }
 
 .nav-item.active svg {
@@ -162,6 +184,10 @@
   background: var(--bg-surface);
 }
 
+.bottom-nav.collapsed .bottom-nav-inner {
+  gap: 0;
+}
+
 .bottom-nav.collapsed .nav-item {
   width: 0;
   opacity: 0;
@@ -172,7 +198,12 @@
 
 .bottom-nav.collapsed .quick-search-trigger {
   display: inline-flex;
+  margin: 0;
   animation: nav-search-in 180ms ease-out;
+}
+
+.bottom-nav.collapsed .nav-active-indicator {
+  display: none;
 }
 
 .nav-tooltip {
@@ -211,6 +242,10 @@
   flex-direction: column;
 }
 
+.bottom-nav.map-mode .nav-active-indicator {
+  display: none;
+}
+
 .bottom-nav.map-mode .nav-item {
   display: none;
 }
@@ -247,10 +282,12 @@
   .bottom-nav,
   .nav-item,
   .quick-search-trigger,
-  .nav-tooltip {
+  .nav-tooltip,
+  .nav-active-indicator {
     transition-duration: 0.01ms;
   }
   .bottom-nav.collapsed .quick-search-trigger { animation: none; }
+  .nav-active-indicator { transition-duration: 0.01ms; }
 }
 
 /* --- Quick Station Search --- */

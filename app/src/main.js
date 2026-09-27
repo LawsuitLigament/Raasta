@@ -6,7 +6,8 @@ import './styles/index.css';
 import './styles/components.css';
 import './styles/animations.css';
 
-import { registerRoute, initRouter, navigate } from './core/router.js';
+import { App } from '@capacitor/app';
+import { registerRoute, initRouter, navigate, handleBack, setExitAppHandler } from './core/router.js';
 import { initTheme } from './core/theme.js';
 import { renderHeader, renderBottomNav } from './components/header.js';
 import { renderHomeScreen } from './screens/home.js';
@@ -38,8 +39,10 @@ function init() {
   registerRoute('fare', renderFareScreen);
   registerRoute('settings', renderSettingsScreen);
 
-  // Start router
+  // Start router and keep Android system back inside the app navigation stack.
   initRouter();
+  setExitAppHandler(() => App.exitApp());
+  App.addListener('backButton', () => handleBack());
 
   // Hide loading screen
   const loadingScreen = document.getElementById('loading-screen');

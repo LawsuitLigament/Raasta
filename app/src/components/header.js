@@ -69,6 +69,7 @@ export function renderBottomNav(navigate) {
   nav.setAttribute('aria-label', 'Primary navigation');
   nav.innerHTML = `
     <div class="bottom-nav-inner">
+      <span class="nav-active-indicator" aria-hidden="true"></span>
       <button class="nav-item active" data-path="home" id="nav-home" type="button" data-label="Route" title="Route">
         ${NAV_ICONS.route}<span class="sr-only">Route</span>
       </button>
@@ -108,6 +109,7 @@ export function renderBottomNav(navigate) {
 
   setupNavTooltips(nav);
   setupNavScroll(nav, quickSearch);
+  setupNavIndicator(nav);
 
   window.addEventListener('metro-map:open', () => {
     nav.classList.add('map-mode', 'collapsed');
@@ -119,6 +121,36 @@ export function renderBottomNav(navigate) {
   });
 
   return nav;
+}
+
+function setupNavIndicator(nav) {
+  const inner = nav.querySelector('.bottom-nav-inner');
+  const indicator = nav.querySelector('.nav-active-indicator');
+  let frame = null;
+
+  const sync = () => {
+    frame = null;
+    const activeItem = nav.querySelector('.nav-item.active');
+    if (!activeItem || nav.classList.contains('collapsed') || nav.classList.contains('map-mode')) {
+      indicator.classList.remove('visible');
+      return;
+    }
+
+    const innerRect = inner.getBoundingClientRect();
+    const itemRect = activeItem.getBoundingClientRect();
+    indicator.style.width = `${itemRect.width}px`;
+    indicator.style.transform = `translateX(${itemRect.left - innerRect.left}px)`;
+    indicator.classList.add('visible');
+  };
+
+  const requestSync = () => {
+    if (frame === null) frame = window.requestAnimationFrame(sync);
+  };
+
+  const observer = new MutationObserver(requestSync);
+  observer.observe(nav, { attributes: true, subtree: true, attributeFilter: ['class'] });
+  window.addEventListener('resize', requestSync);
+  requestSync();
 }
 
 function setupNavScroll(nav, quickSearch) {
