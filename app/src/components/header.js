@@ -48,6 +48,8 @@ export function renderHeader(navigate) {
     toggleTheme({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
   });
   window.addEventListener('themechange', updateThemeIcon);
+  window.addEventListener('metro-map:open', () => header.classList.add('map-mode-hidden'));
+  window.addEventListener('metro-map:close', () => header.classList.remove('map-mode-hidden'));
 
   return header;
 }
