@@ -1,4 +1,4 @@
-// Native coordinates extracted from public/delhi-metro-map.svg.
+// Native coordinates extracted from src/assets/delhi-metro-map.svg.
 export const MAP_WIDTH = 1500;
 export const MAP_HEIGHT = 1450;
 export const STATION_MAP_POSITIONS = {
