@@ -151,14 +151,15 @@ function createSvg(route) {
     group.appendChild(element('circle', { cx: point.x, cy: point.y, r: isStart || isEnd ? 15 : 9, class: 'station-halo' }));
     group.appendChild(element('circle', { cx: point.x, cy: point.y, r: isStart || isEnd ? 9 : 5, class: 'station-node', fill: point.color }));
     const isInterchange = route.interchanges.some(interchange => interchange.station === point.id);
-    const labelY = point.y < 300 ? point.y + 34 : point.y - 22;
-    group.appendChild(element('text', {
-      x: point.x,
-      y: labelY,
-      class: 'station-label',
-      'text-anchor': 'middle',
-      'aria-label': point.name,
-    }, point.name));
+    const labelPosition = getLabelPosition(route.points, index);
+    group.appendChild(element('line', {
+      x1: 0,
+      y1: 0,
+      x2: labelPosition.x - point.x,
+      y2: labelPosition.y - point.y,
+      class: 'station-label-connector',
+    }));
+    group.appendChild(createStationLabel(point.name, labelPosition));
     if (isStart || isEnd) {
       group.appendChild(element('text', { x: point.x, y: point.y + (point.y < 300 ? -25 : 28), class: 'station-badge', 'text-anchor': 'middle' }, isStart ? 'START' : 'DESTINATION'));
     }
@@ -269,6 +270,71 @@ function setupInteractions(container, viewport, controls, route) {
   container.addEventListener('pointerup', release);
   container.addEventListener('pointercancel', release);
   update();
+}
+
+function getLabelPosition(points, index) {
+  const point = points[index];
+  const previous = points[index - 1] || point;
+  const next = points[index + 1] || point;
+  const tangentX = next.x - previous.x;
+  const tangentY = next.y - previous.y;
+  const tangentLength = Math.hypot(tangentX, tangentY) || 1;
+  const normalX = -tangentY / tangentLength;
+  const normalY = tangentX / tangentLength;
+  const side = index % 2 === 0 ? 1 : -1;
+  const offset = 44;
+
+  return {
+    x: Math.min(VIEWBOX_WIDTH - 100, Math.max(100, point.x + normalX * offset * side)),
+    y: Math.min(VIEWBOX_HEIGHT - 70, Math.max(70, point.y + normalY * offset * side)),
+  };
+}
+
+function createStationLabel(name, position) {
+  const lines = wrapLabel(name);
+  const lineHeight = 19;
+  const width = Math.min(270, Math.max(72, Math.max(...lines.map(line => line.length)) * 9 + 22));
+  const height = lines.length * lineHeight + 12;
+  const group = element('g', {
+    class: 'station-label',
+    transform: `translate(${position.x} ${position.y})`,
+    'aria-label': name,
+  });
+  group.appendChild(element('rect', {
+    x: -width / 2,
+    y: -height / 2,
+    width,
+    height,
+    rx: 7,
+    class: 'station-label-bg',
+  }));
+  const text = element('text', {
+    x: 0,
+    y: -((lines.length - 1) * lineHeight) / 2 + 5,
+    class: 'station-label-text',
+    'text-anchor': 'middle',
+  });
+  lines.forEach((line, lineIndex) => {
+    text.appendChild(element('tspan', { x: 0, dy: lineIndex === 0 ? 0 : lineHeight }, line));
+  });
+  group.appendChild(text);
+  return group;
+}
+
+function wrapLabel(name, maxCharacters = 22) {
+  const words = name.split(/\s+/);
+  const lines = [];
+  let line = '';
+  words.forEach((word) => {
+    if (line && `${line} ${word}`.length > maxCharacters) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = line ? `${line} ${word}` : word;
+    }
+  });
+  if (line) lines.push(line);
+  return lines.length ? lines : [name];
 }
 
 function getInitialView(routeBounds) {
