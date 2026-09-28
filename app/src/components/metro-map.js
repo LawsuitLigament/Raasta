@@ -151,11 +151,14 @@ function createSvg(route) {
     group.appendChild(element('circle', { cx: point.x, cy: point.y, r: isStart || isEnd ? 15 : 9, class: 'station-halo' }));
     group.appendChild(element('circle', { cx: point.x, cy: point.y, r: isStart || isEnd ? 9 : 5, class: 'station-node', fill: point.color }));
     const isInterchange = route.interchanges.some(interchange => interchange.station === point.id);
-    const showLabel = isStart || isEnd || isInterchange || index % 4 === 0;
     const labelY = point.y < 300 ? point.y + 34 : point.y - 22;
-    if (showLabel) {
-      group.appendChild(element('text', { x: point.x, y: labelY, class: 'station-label', 'text-anchor': 'middle' }, point.name));
-    }
+    group.appendChild(element('text', {
+      x: point.x,
+      y: labelY,
+      class: 'station-label',
+      'text-anchor': 'middle',
+      'aria-label': point.name,
+    }, point.name));
     if (isStart || isEnd) {
       group.appendChild(element('text', { x: point.x, y: point.y + (point.y < 300 ? -25 : 28), class: 'station-badge', 'text-anchor': 'middle' }, isStart ? 'START' : 'DESTINATION'));
     }
@@ -179,9 +182,10 @@ function createControls() {
   const controls = document.createElement('div');
   controls.className = 'map-controls';
   controls.innerHTML = `
-    <button type="button" data-map-action="zoom-in" aria-label="Zoom in">+</button>
-    <button type="button" data-map-action="zoom-out" aria-label="Zoom out">−</button>
-    <button type="button" data-map-action="reset" aria-label="Reset map view">↺</button>
+    <button type="button" data-map-action="zoom-in" aria-label="Zoom in" title="Zoom in">+</button>
+    <button type="button" data-map-action="zoom-out" aria-label="Zoom out" title="Zoom out">−</button>
+    <button type="button" data-map-action="rotate" aria-label="Rotate map" title="Rotate map">⟳</button>
+    <button type="button" data-map-action="reset" aria-label="Reset map view" title="Reset map view">↺</button>
   `;
   return controls;
 }
@@ -192,6 +196,7 @@ function setupInteractions(container, viewport, controls, route) {
   let scale = initialView.scale;
   let x = initialView.x;
   let y = initialView.y;
+  let rotation = 0;
   let dragging = false;
   let pointerStart = null;
   const pointers = new Map();
@@ -199,7 +204,7 @@ function setupInteractions(container, viewport, controls, route) {
   let pinchScale = 1;
 
   const update = () => {
-    viewport.setAttribute('transform', `translate(${x} ${y}) scale(${scale})`);
+    viewport.setAttribute('transform', `translate(${x} ${y}) rotate(${rotation} ${VIEWBOX_WIDTH / 2} ${VIEWBOX_HEIGHT / 2}) scale(${scale})`);
   };
   const zoom = (factor, centerX = VIEWBOX_WIDTH / 2, centerY = VIEWBOX_HEIGHT / 2) => {
     const nextScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * factor));
@@ -214,15 +219,17 @@ function setupInteractions(container, viewport, controls, route) {
     scale = resetView.scale;
     x = resetView.x;
     y = resetView.y;
+    rotation = 0;
     update();
   };
 
-  controls.addEventListener('click', (event) => {
-    const action = event.target.closest('[data-map-action]')?.dataset.mapAction;
-    if (action === 'zoom-in') zoom(1.25);
-    if (action === 'zoom-out') zoom(0.8);
-    if (action === 'reset') reset();
+  controls.querySelector('[data-map-action="zoom-in"]').addEventListener('click', () => zoom(1.25));
+  controls.querySelector('[data-map-action="zoom-out"]').addEventListener('click', () => zoom(0.8));
+  controls.querySelector('[data-map-action="rotate"]').addEventListener('click', () => {
+    rotation = (rotation + 90) % 360;
+    update();
   });
+  controls.querySelector('[data-map-action="reset"]').addEventListener('click', reset);
   container.addEventListener('wheel', (event) => {
     event.preventDefault();
     const rect = container.getBoundingClientRect();

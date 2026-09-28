@@ -60,7 +60,7 @@
 .route-segment { fill: none; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: .98; }
 .station-halo { fill: var(--bg-primary); stroke: var(--text-primary); stroke-width: 3; }
 .station-node { stroke: var(--bg-primary); stroke-width: 3; }
-.station-label { fill: var(--text-primary); font-size: 13px; font-weight: 700; paint-order: stroke; stroke: var(--bg-primary); stroke-width: 4px; stroke-linejoin: round; }
+.station-label { fill: var(--text-primary); font-size: 26px; font-weight: 800; paint-order: stroke; stroke: var(--bg-primary); stroke-width: 8px; stroke-linejoin: round; pointer-events: none; }
 .station-badge { fill: var(--accent-primary); font-size: 10px; font-weight: 800; letter-spacing: 1px; }
 .map-legend { opacity: .9; }
 .legend-line { stroke-width: 6; stroke-linecap: round; }
@@ -69,6 +69,7 @@
   position: absolute;
   top: var(--space-md);
   right: var(--space-md);
+  z-index: 3;
   display: grid;
   gap: 6px;
 }
