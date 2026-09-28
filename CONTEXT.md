@@ -45,6 +45,6 @@ These are planning estimates and are not official live-service data.
 
 ## Known limitations
 
-- The metro map is currently a static SVG with pan and zoom; route overlays are not implemented.
+- The route map is an interactive vector map with pan, zoom, and route overlays. It uses locally vendored Delhi Metro map geometry where station positions can be matched, with line-order fallbacks for stations absent from the source map.
 - Route and fare estimates are static-model calculations and do not account for live delays, closures, or service changes.
 - The service worker caches the app shell and network responses; the offline update strategy should be revisited when release assets change.

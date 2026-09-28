@@ -31,6 +31,18 @@ export function createQuickStationSearch(navigate, restoreFocus) {
 
   document.body.appendChild(overlay);
 
+  const syncKeyboardOffset = () => {
+    const viewport = window.visualViewport;
+    const keyboardOffset = viewport
+      ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+      : 0;
+    overlay.style.setProperty('--quick-search-keyboard-offset', `${keyboardOffset}px`);
+  };
+
+  syncKeyboardOffset();
+  window.visualViewport?.addEventListener('resize', syncKeyboardOffset);
+  window.visualViewport?.addEventListener('scroll', syncKeyboardOffset);
+
   const inputContainer = overlay.querySelector('#quick-search-input-container');
   const message = overlay.querySelector('#quick-search-message');
   const actions = overlay.querySelector('#quick-search-actions');
@@ -71,20 +83,20 @@ export function createQuickStationSearch(navigate, restoreFocus) {
     if (state.fromStation) {
       setState({ toStation: stationId });
       close();
-      navigate('results');
+      navigate('results', { force: true, replace: true });
       return;
     }
 
     setState({ toStation: stationId, focusHomeField: 'from' });
     close();
-    navigate('home');
+    navigate('home', { force: true });
   }
 
   function setAsOrigin() {
     if (!pendingStationId) return;
     setState({ fromStation: pendingStationId, focusHomeField: 'to' });
     close();
-    navigate('home');
+    navigate('home', { force: true });
   }
 
   function swapRoute() {
@@ -96,7 +108,7 @@ export function createQuickStationSearch(navigate, restoreFocus) {
       focusHomeField: 'to',
     });
     close();
-    navigate('home');
+    navigate('home', { force: true });
   }
 
   searchInput = createSearchInput({

@@ -3,9 +3,12 @@
 
 import {
   GRAPH,
+  CONSTRUCTION_GRAPH,
+  NETWORK_METADATA,
   STATIONS,
   LINES,
   LINE_STATIONS,
+  CONSTRUCTION_LINE_STATIONS,
   getTransferTime,
   AVG_DISTANCE_KM,
   calculateFare,
@@ -16,9 +19,11 @@ import {
 } from './metro-data.js';
 
 export {
+  NETWORK_METADATA,
   LINES,
   STATIONS,
   LINE_STATIONS,
+  CONSTRUCTION_LINE_STATIONS,
   getTransferTime,
   AVG_DISTANCE_KM,
   calculateFare,
@@ -32,12 +37,16 @@ export function getStation(stationId) {
   return STATIONS[stationId];
 }
 
-export function getStationEdges(stationId) {
-  return GRAPH[stationId] || [];
+export function getStationEdges(stationId, includeConstruction = false) {
+  const operationalEdges = GRAPH[stationId] || [];
+  if (!includeConstruction) return operationalEdges;
+  return operationalEdges.concat(CONSTRUCTION_GRAPH[stationId] || []);
 }
 
-export function getStationLines(stationId) {
-  return STATIONS[stationId]?.lines || [];
+export function getStationLines(stationId, includeConstruction = false) {
+  const station = STATIONS[stationId];
+  if (!station) return [];
+  return includeConstruction ? station.lines : station.operationalLines;
 }
 
 export function getLine(lineId) {

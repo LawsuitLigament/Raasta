@@ -461,7 +461,8 @@ img {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100dvh;
+  max-height: 100vh;
   background-color: var(--bg-primary);
   z-index: 1000;
   transform: translateY(-100%);
@@ -491,13 +492,39 @@ img {
 .map-panel-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: var(--space-sm) var(--space-lg);
   background-color: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   position: relative;
   order: 2; /* Header at the bottom of the map panel */
   z-index: 2;
+}
+
+.map-panel-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-x;
+  transition: color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.map-panel-close:hover,
+.map-panel-close:focus-visible {
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+}
+
+.map-panel-close:active {
+  transform: scale(0.92);
 }
 
 .map-panel-handle {
@@ -514,6 +541,7 @@ img {
 
 .map-container-wrapper {
   flex: 1;
+  min-height: 0;
   position: relative;
   overflow: hidden;
   order: 1; /* Map at the top */

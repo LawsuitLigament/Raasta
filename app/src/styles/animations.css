@@ -205,6 +205,52 @@
   animation: interchangePulse 2s ease-in-out infinite;
 }
 
+/* --- Theme reveal --- */
+.theme-transition-wash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: var(--bg-primary);
+  clip-path: circle(0 at var(--theme-origin-x) var(--theme-origin-y));
+  transition: clip-path 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.theme-transition-wash.active {
+  clip-path: circle(150vmax at var(--theme-origin-x) var(--theme-origin-y));
+}
+
+@supports (view-transition-name: root) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.56s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  ::view-transition-old(root) {
+    animation-name: theme-old-out;
+    z-index: 1;
+  }
+
+  ::view-transition-new(root) {
+    animation-name: theme-new-reveal;
+    z-index: 2;
+  }
+}
+
+@keyframes theme-old-out {
+  to { opacity: 0.94; }
+}
+
+@keyframes theme-new-reveal {
+  from {
+    clip-path: circle(0 at var(--theme-origin-x) var(--theme-origin-y));
+  }
+  to {
+    clip-path: circle(150vmax at var(--theme-origin-x) var(--theme-origin-y));
+  }
+}
+
 /* --- Reduce motion --- */
 @media (prefers-reduced-motion: reduce) {
   *,

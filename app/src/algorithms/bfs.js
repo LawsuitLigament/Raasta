@@ -1,5 +1,5 @@
 // ============================================
-// Modified BFS â€” Least Interchanges Route
+// Modified BFS — Least Interchanges Route
 // Prioritizes minimizing line switches
 // Secondary: minimize travel time
 // ============================================
@@ -7,9 +7,10 @@
 import { getStationEdges, getStationLines } from '../data/metro-network.js';
 import { buildRouteResult } from './route-result.js';
 
-export function findLeastInterchangesRoute(sourceId, destId) {
+export function findLeastInterchangesRoute(sourceId, destId, options = {}) {
+  const { includeConstruction = false } = options;
   if (sourceId === destId) return null;
-  if (!getStationEdges(sourceId).length || !getStationEdges(destId).length) return null;
+  if (!getStationEdges(sourceId, includeConstruction).length || !getStationEdges(destId, includeConstruction).length) return null;
 
   // BFS where each "level" = one more interchange
   // State: { station, line, interchangeCount }
@@ -20,7 +21,7 @@ export function findLeastInterchangesRoute(sourceId, destId) {
 
   // Start: explore all lines the source station is on
   let currentLevel = [];
-  const sourceLines = getStationLines(sourceId);
+  const sourceLines = getStationLines(sourceId, includeConstruction);
   sourceLines.forEach(line => {
     const key = `${sourceId}|${line}`;
     visited.add(key);
@@ -33,7 +34,7 @@ export function findLeastInterchangesRoute(sourceId, destId) {
 
   while (currentLevel.length > 0 && interchangeCount <= MAX_INTERCHANGES) {
     // Phase 1: Expand all reachable stations on current lines (no interchange)
-    const reachableOnCurrentLines = expandOnSameLines(currentLevel, visited, prev);
+    const reachableOnCurrentLines = expandOnSameLines(currentLevel, visited, prev, includeConstruction);
     
     // Check if destination is reached
     for (const node of reachableOnCurrentLines) {
@@ -45,7 +46,7 @@ export function findLeastInterchangesRoute(sourceId, destId) {
     // Phase 2: Find all interchange opportunities
     const nextLevel = [];
     for (const node of reachableOnCurrentLines) {
-      const stationLines = getStationLines(node.station);
+      const stationLines = getStationLines(node.station, includeConstruction);
       for (const otherLine of stationLines) {
         if (otherLine === node.line) continue;
         const key = `${node.station}|${otherLine}`;
@@ -70,8 +71,8 @@ export function findLeastInterchangesRoute(sourceId, destId) {
   return null; // No route found
 }
 
-function expandOnSameLines(startNodes, visited, prev) {
-  // BFS on same line only â€” no interchanges
+function expandOnSameLines(startNodes, visited, prev, includeConstruction) {
+  // BFS on same line only — no interchanges
   const queue = [...startNodes];
   const allReachable = [...startNodes];
   let head = 0;
@@ -79,7 +80,7 @@ function expandOnSameLines(startNodes, visited, prev) {
   while (head < queue.length) {
     const { station, line } = queue[head++];
     
-    const edges = getStationEdges(station);
+    const edges = getStationEdges(station, includeConstruction);
     for (const edge of edges) {
       if (edge.line !== line) continue;
       const key = `${edge.to}|${line}`;

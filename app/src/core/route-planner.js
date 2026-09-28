@@ -17,7 +17,15 @@ export function planRoutes(sourceId, destId) {
     leastInterchangesRoute = fastestRoute;
   }
 
-  return { fastestRoute, leastInterchangesRoute };
+  const constructionFastestRoute = findFastestRoute(sourceId, destId, { includeConstruction: true });
+  const constructionLeastInterchangesRoute = findLeastInterchangesRoute(sourceId, destId, { includeConstruction: true });
+
+  return {
+    fastestRoute,
+    leastInterchangesRoute,
+    constructionFastestRoute: constructionFastestRoute?.hasConstruction ? constructionFastestRoute : null,
+    constructionLeastInterchangesRoute: constructionLeastInterchangesRoute?.hasConstruction ? constructionLeastInterchangesRoute : null,
+  };
 }
 
 export function planFastestRoute(sourceId, destId) {

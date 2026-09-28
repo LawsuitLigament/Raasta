@@ -13,13 +13,20 @@ export const LINES = {
   greenBranch: { id: 'greenBranch', name: 'Green Line (Branch)', color: '#2ECC71', textColor: '#fff' },
   violet: { id: 'violet', name: 'Violet Line', color: '#8E44AD', textColor: '#fff' },
   pink: { id: 'pink', name: 'Pink Line', color: '#E91E8F', textColor: '#fff' },
-  magenta: { id: 'magenta', name: 'Magenta Line', color: '#E91E63', textColor: '#fff' },
-  grey: { id: 'grey', name: 'Grey Line', color: '#95A5A6', textColor: '#fff' },
-  orange: { id: 'orange', name: 'Airport Express', color: '#E67E22', textColor: '#fff' },
-  golden: { id: 'golden', name: 'Golden Line', color: '#D4AF37', textColor: '#000' },
+  magenta: { id: 'magenta', name: 'Magenta Line', color: '#E91E63', textColor: '#fff', status: 'operational' },
+  magentaConstruction: { id: 'magentaConstruction', name: 'Magenta Line (Under Construction)', color: '#8B8B8B', textColor: '#fff', status: 'construction' },
+  grey: { id: 'grey', name: 'Grey Line', color: '#95A5A6', textColor: '#fff', status: 'operational' },
+  orange: { id: 'orange', name: 'Airport Express', color: '#E67E22', textColor: '#fff', status: 'operational' },
+  golden: { id: 'golden', name: 'Golden Line (Under Construction)', color: '#8B8B8B', textColor: '#fff', status: 'construction' },
 };
 
-// All line station sequences (ordered)
+export const NETWORK_METADATA = {
+  updated: 'September 2026',
+  version: '1.1.0',
+  fareRevision: 'August 2025',
+};
+
+// All operational line station sequences (ordered)
 export const LINE_STATIONS = {
   red: [
     'rithala', 'rohini-west', 'rohini-east', 'pitampura', 'kohat-enclave',
@@ -103,18 +110,13 @@ export const LINE_STATIONS = {
     'majlis-park'
   ],
   magenta: [
-    'rk-ashram-marg', 'nabi-karim', 'sadar-bazar', 'pul-bangash', 'ghanta-ghar',
-    'derawal-nagar', 'ashok-vihar', 'azadpur', 'majlis-park', 'bhalaswa',
-    'haiderpur-badli-mor', 'north-pitampura', 'prashant-vihar', 'pitampura',
-    'deepali-chowk', 'pushpanjali', 'west-enclave', 'mangol-puri', 'peeragarhi',
-    'paschim-vihar', 'keshopur', 'krishna-park-ext', 'janakpuri-west',
-    'dabri-mor', 'dashrath-puri', 'palam',
-    'sadar-bazar-cantonment', 'terminal-1-igi', 'shankar-vihar',
-    'vasant-vihar', 'munirka', 'rk-puram', 'iit-delhi', 'hauz-khas',
-    'panchsheel-park', 'chirag-delhi', 'greater-kailash',
-    'nehru-enclave', 'kalkaji-mandir', 'okhla-nsic', 'sukhdev-vihar',
-    'jamia-millia-islamia', 'okhla-vihar', 'jasola-vihar-shaheen-bagh',
-    'kalindi-kunj', 'okhla-bird-sanctuary', 'botanical-garden'
+    'krishna-park-ext', 'janakpuri-west', 'dabri-mor', 'dashrath-puri', 'palam',
+    'sadar-bazar-cantonment', 'terminal-1-igi', 'shankar-vihar', 'vasant-vihar',
+    'munirka', 'rk-puram', 'iit-delhi', 'hauz-khas', 'panchsheel-park',
+    'chirag-delhi', 'greater-kailash', 'nehru-enclave', 'kalkaji-mandir',
+    'okhla-nsic', 'sukhdev-vihar', 'jamia-millia-islamia', 'okhla-vihar',
+    'jasola-vihar-shaheen-bagh', 'kalindi-kunj', 'okhla-bird-sanctuary',
+    'botanical-garden'
   ],
   grey: [
     'dwarka', 'nangli', 'najafgarh', 'dhansa-bus-stand'
@@ -123,12 +125,24 @@ export const LINE_STATIONS = {
     'new-delhi', 'shivaji-stadium', 'dhaula-kuan', 'delhi-aerocity',
     'igi-airport-t3', 'dwarka-sector-21', 'yashobhoomi-dwarka-sector-25'
   ],
+};
+
+// These corridors are visible in station search and planned-route previews,
+// but are deliberately excluded from the operational graph above.
+export const CONSTRUCTION_LINE_STATIONS = {
+  magentaConstruction: [
+    'rk-ashram-marg', 'nabi-karim', 'sadar-bazar', 'pul-bangash', 'ghanta-ghar',
+    'nanak-piao-derawal-nagar', 'ashok-vihar', 'azadpur', 'majlis-park', 'bhalaswa',
+    'haiderpur-badli-mor', 'haiderpur-village', 'uttari-pitampura-prashant-vihar', 'madhuban-chowk',
+    'deepali-chowk', 'pushpanjali', 'mangolpur-kalan-west-enclave', 'mangol-puri', 'peeragarhi',
+    'paschim-vihar', 'keshopur', 'krishna-park-ext'
+  ],
   golden: [
-    'delhi-aerocity', 'mahipalpur', 'vasant-kunj', 'kishangarh',
-    'chhattarpur', 'chhattarpur-mandir', 'ignou', 'neb-sarai',
-    'saket-g-block', 'ambedkar-nagar', 'khanpur', 'sangam-vihar-tigri',
-    'anandmayee-marg-junction', 'tughlakabad-railway-colony', 'tughlakabad'
-  ]
+    'delhi-aerocity', 'mahipalpur', 'vasant-kunj', 'kishangarh', 'chhattarpur',
+    'chhattarpur-mandir', 'ignou', 'neb-sarai', 'saket-g-block', 'ambedkar-nagar',
+    'khanpur', 'sangam-vihar-tigri', 'anandmayee-marg-junction',
+    'tughlakabad-railway-colony', 'tughlakabad'
+  ],
 };
 
 // Station information database
@@ -274,12 +288,16 @@ const stationNames = {
 
   // Magenta Line
   'rk-ashram-marg': 'RK Ashram Marg', 'nabi-karim': 'Nabi Karim', 'sadar-bazar': 'Sadar Bazar',
-  'pul-bangash': 'Pul Bangash', 'ghanta-ghar': 'Ghanta Ghar', 'derawal-nagar': 'Derawal Nagar',
+  'pul-bangash': 'Pul Bangash', 'ghanta-ghar': 'Ghanta Ghar',
+  'nanak-piao-derawal-nagar': 'Nanak Piao - Derawal Nagar',
   'ashok-vihar': 'Ashok Vihar', 'azadpur': 'Azadpur', 'majlis-park': 'Majlis Park',
   'bhalaswa': 'Bhalaswa', 'haiderpur-badli-mor': 'Haiderpur Badli Mor',
-  'north-pitampura': 'North Pitampura', 'prashant-vihar': 'Prashant Vihar',
-  'pitampura': 'Pitampura', 'deepali-chowk': 'Deepali Chowk', 'pushpanjali': 'Pushpanjali',
-  'west-enclave': 'West Enclave', 'mangol-puri': 'Mangol Puri', 'peeragarhi': 'Peeragarhi',
+  'haiderpur-village': 'Haiderpur Village',
+  'uttari-pitampura-prashant-vihar': 'Uttari Pitampura - Prashant Vihar',
+  'madhuban-chowk': 'Madhuban Chowk', 'pitampura': 'Pitampura',
+  'deepali-chowk': 'Deepali Chowk', 'pushpanjali': 'Pushpanjali',
+  'mangolpur-kalan-west-enclave': 'Mangolpur Kalan - West Enclave',
+  'mangol-puri': 'Mangol Puri', 'peeragarhi': 'Peeragarhi',
   'paschim-vihar': 'Paschim Vihar', 'keshopur': 'Keshopur', 'krishna-park-ext': 'Krishna Park Extension',
   'janakpuri-west': 'Janakpuri West',
   'dabri-mor': 'Dabri Mor - Janakpuri South', 'dashrath-puri': 'Dashrath Puri',
@@ -311,11 +329,18 @@ const stationNames = {
   'tughlakabad': 'Tughlakabad',
 };
 
-// Register all stations with their lines
+// Register operational and construction stations in the shared station catalogue.
 Object.entries(LINE_STATIONS).forEach(([lineId, stations]) => {
-  stations.forEach(sId => {
-    registerStation(sId, stationNames[sId] || sId, [lineId]);
-  });
+  stations.forEach(sId => registerStation(sId, stationNames[sId] || sId, [lineId]));
+});
+Object.entries(CONSTRUCTION_LINE_STATIONS).forEach(([lineId, stations]) => {
+  stations.forEach(sId => registerStation(sId, stationNames[sId] || sId, [lineId]));
+});
+
+Object.values(STATIONS).forEach(station => {
+  station.operationalLines = station.lines.filter(lineId => LINES[lineId]?.status !== 'construction');
+  station.constructionLines = station.lines.filter(lineId => LINES[lineId]?.status === 'construction');
+  station.isConstructionOnly = station.operationalLines.length === 0;
 });
 
 // ============================================
@@ -323,23 +348,25 @@ Object.entries(LINE_STATIONS).forEach(([lineId, stations]) => {
 // ~2 min between regular stations
 // ============================================
 export const GRAPH = {};
+export const CONSTRUCTION_GRAPH = {};
 
-function addEdge(s1, s2, time, line) {
-  if (!GRAPH[s1]) GRAPH[s1] = [];
-  if (!GRAPH[s2]) GRAPH[s2] = [];
-  GRAPH[s1].push({ to: s2, time, line });
-  GRAPH[s2].push({ to: s1, time, line });
+function addEdge(graph, s1, s2, time, line) {
+  if (!graph[s1]) graph[s1] = [];
+  if (!graph[s2]) graph[s2] = [];
+  graph[s1].push({ to: s2, time, line });
+  graph[s2].push({ to: s1, time, line });
 }
 
-// Build graph from line sequences
-Object.entries(LINE_STATIONS).forEach(([lineId, stations]) => {
-  for (let i = 0; i < stations.length - 1; i++) {
-    const s1 = stations[i];
-    const s2 = stations[i + 1];
-    // Pink line loop: last station connects back to first
-    addEdge(s1, s2, 2, lineId);
-  }
-});
+function buildGraph(graph, lineStations) {
+  Object.entries(lineStations).forEach(([lineId, stations]) => {
+    for (let i = 0; i < stations.length - 1; i++) {
+      addEdge(graph, stations[i], stations[i + 1], 2, lineId);
+    }
+  });
+}
+
+buildGraph(GRAPH, LINE_STATIONS);
+buildGraph(CONSTRUCTION_GRAPH, CONSTRUCTION_LINE_STATIONS);
 
 // ============================================
 // Interchange transfer times (variable)
@@ -425,8 +452,10 @@ export const AVG_DISTANCE_KM = {
   violet: 1.4,
   pink: 1.55,
   magenta: 1.55,
+  magentaConstruction: 1.55,
   grey: 1.7,
   orange: 4.5,
+  golden: 1.6,
 };
 
 // Calculate fare from distance

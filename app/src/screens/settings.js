@@ -3,7 +3,7 @@
 // ============================================
 
 import { getTheme, toggleTheme } from '../core/theme.js';
-import { STATIONS, LINES } from '../data/metro-network.js';
+import { STATIONS, LINES, FARE_CHART, NETWORK_METADATA } from '../data/metro-network.js';
 
 export function renderSettingsScreen() {
   const screen = document.createElement('div');
@@ -11,8 +11,12 @@ export function renderSettingsScreen() {
   screen.id = 'settings-screen';
 
   const currentTheme = getTheme();
-  const totalStations = Object.keys(STATIONS).length;
-  const totalLines = Object.keys(LINES).length;
+  const operationalLines = Object.values(LINES).filter(line => line.status !== 'construction');
+  const constructionLines = Object.values(LINES).filter(line => line.status === 'construction');
+  const operationalStations = Object.values(STATIONS).filter(station => station.operationalLines.length > 0);
+  const constructionStations = Object.values(STATIONS).filter(station => station.constructionLines.length > 0);
+  const lowestFare = FARE_CHART.slabs[0].tokenFare;
+  const highestFare = FARE_CHART.slabs[FARE_CHART.slabs.length - 1].tokenFare;
 
   screen.innerHTML = `
     <div class="container" style="padding-top: var(--space-lg);">
@@ -39,7 +43,15 @@ export function renderSettingsScreen() {
           <div class="setting-item-left">
             <div class="setting-item-text">
               <span class="setting-item-title">Network Coverage</span>
-              <span class="setting-item-desc">${totalLines} lines · ${totalStations} stations</span>
+              <span class="setting-item-desc">${operationalLines.length} operational lines · ${operationalStations.length} stations</span>
+            </div>
+          </div>
+        </div>
+        <div class="setting-item">
+          <div class="setting-item-left">
+            <div class="setting-item-text">
+              <span class="setting-item-title">Construction Coverage</span>
+              <span class="setting-item-desc">${constructionLines.length} planned corridors · ${constructionStations.length} planned stations</span>
             </div>
           </div>
         </div>
@@ -47,7 +59,7 @@ export function renderSettingsScreen() {
           <div class="setting-item-left">
             <div class="setting-item-text">
               <span class="setting-item-title">Data Updated</span>
-              <span class="setting-item-desc">March 2026</span>
+              <span class="setting-item-desc">${NETWORK_METADATA.updated}</span>
             </div>
           </div>
         </div>
@@ -55,7 +67,7 @@ export function renderSettingsScreen() {
           <div class="setting-item-left">
             <div class="setting-item-text">
               <span class="setting-item-title">Fare Structure</span>
-              <span class="setting-item-desc">August 2025 revised fares</span>
+              <span class="setting-item-desc">${NETWORK_METADATA.fareRevision} · ₹${lowestFare}–₹${highestFare} · ${FARE_CHART.cardDiscountPercent}% card discount</span>
             </div>
           </div>
         </div>
@@ -68,7 +80,7 @@ export function renderSettingsScreen() {
           <div class="setting-item-left">
             <div class="setting-item-text">
               <span class="setting-item-title">Delhi Metro Route Planner</span>
-              <span class="setting-item-desc">Version 1.0.0</span>
+              <span class="setting-item-desc">Version ${NETWORK_METADATA.version}</span>
             </div>
           </div>
         </div>
@@ -97,15 +109,18 @@ export function renderSettingsScreen() {
     const themeSetting = screen.querySelector('#theme-setting');
 
     const handleThemeToggle = () => {
-      const newTheme = toggleTheme();
+      const headerBtn = document.querySelector('#theme-toggle-btn');
+      const originRect = headerBtn?.getBoundingClientRect();
+      const newTheme = toggleTheme(originRect ? {
+        x: originRect.left + originRect.width / 2,
+        y: originRect.top + originRect.height / 2,
+      } : null);
       themeToggle.classList.toggle('active', newTheme === 'mocha');
       
       const desc = themeSetting.querySelector('.setting-item-desc');
       if (desc) desc.textContent = `Catppuccin ${newTheme === 'mocha' ? 'Mocha' : 'Latte'} theme`;
 
-      // Also update header theme button
-      const headerBtn = document.querySelector('#theme-toggle-btn');
-      if (headerBtn) headerBtn.textContent = newTheme === 'mocha' ? 'Light' : 'Dark';
+
     };
 
     themeSetting?.addEventListener('click', handleThemeToggle);

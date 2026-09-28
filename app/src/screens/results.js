@@ -5,7 +5,7 @@
 import { getState, setState } from '../core/state.js';
 import { STATIONS } from '../data/metro-network.js';
 import { planRoutes } from '../core/route-planner.js';
-import { renderRouteDisplay } from '../components/route-display.js';
+import { renderRouteDisplay, renderConstructionRouteDisplay } from '../components/route-display.js';
 import { renderMetroMap } from '../components/metro-map.js';
 import { navigate } from '../core/router.js';
 import { saveRoute } from '../core/persistence.js';
@@ -35,7 +35,12 @@ export function renderResultsScreen() {
     return screen;
   }
 
-  const { fastestRoute, leastInterchangesRoute } = planRoutes(fromStation, toStation);
+  const {
+    fastestRoute,
+    leastInterchangesRoute,
+    constructionFastestRoute,
+    constructionLeastInterchangesRoute,
+  } = planRoutes(fromStation, toStation);
   setState({ fastestRoute, leastInterchangesRoute });
 
   const fromName = STATIONS[fromStation]?.name || fromStation;
@@ -43,6 +48,9 @@ export function renderResultsScreen() {
   const activeTab = state.activeTab || 'fastest';
 
   const activeRoute = activeTab === 'fastest' ? fastestRoute : leastInterchangesRoute;
+  const activeConstructionRoute = activeTab === 'fastest'
+    ? constructionFastestRoute
+    : constructionLeastInterchangesRoute;
 
   screen.innerHTML = `
     <div class="container" style="padding-top: var(--space-lg);">
@@ -69,6 +77,7 @@ export function renderResultsScreen() {
 
       <!-- Tabs -->
       <div class="tabs" id="route-tabs">
+        <span class="tab-active-indicator" aria-hidden="true"></span>
         <button class="tab ${activeTab === 'fastest' ? 'active' : ''}" data-tab="fastest">
           Fastest
         </button>
@@ -80,15 +89,18 @@ export function renderResultsScreen() {
       <!-- Tab Content -->
       <div id="tab-content" style="margin-top: var(--space-lg); padding-bottom: var(--space-2xl);">
         ${renderRouteDisplay(activeRoute)}
+        ${renderConstructionRouteDisplay(activeConstructionRoute)}
       </div>
     </div>
     
     <!-- Sliding Map Panel -->
     <div class="map-sliding-panel" id="map-panel">
-      <div class="map-panel-header" id="close-map-header" style="justify-content: center; cursor: pointer;">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
-          <polyline points="18 15 12 9 6 15"></polyline>
-        </svg>
+      <div class="map-panel-header">
+        <button class="map-panel-close" id="close-map-header" type="button" aria-label="Close map" title="Close map (swipe up)">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+        </button>
       </div>
       <div class="map-container-wrapper" id="map-container-wrapper">
         <!-- Map will be rendered here -->
@@ -131,12 +143,16 @@ export function renderResultsScreen() {
     const toggleMapBtn = screen.querySelector('#toggle-map-btn');
     const closeMapHeader = screen.querySelector('#close-map-header');
 
-    const openMap = () => {
-      // Re-render map with latest route when opening
+    const renderActiveMap = () => {
       const currentActiveTab = getState().activeTab || 'fastest';
       const currentRoute = currentActiveTab === 'fastest' ? fastestRoute : leastInterchangesRoute;
       mapWrapper.innerHTML = '';
       mapWrapper.appendChild(renderMetroMap(currentRoute));
+    };
+
+    const openMap = () => {
+      // Render the selected tab's route before opening the full-screen map.
+      renderActiveMap();
       mapPanel.classList.add('open');
       window.dispatchEvent(new CustomEvent('metro-map:open'));
     };
@@ -172,18 +188,20 @@ export function renderResultsScreen() {
       }
     }, { passive: true });
     
-    // Swipe up to close logic for the header (now at bottom)
-    let handleTouchStartY = 0;
+    // Swipe up on the close arrow to dismiss the map.
+    let handleTouchStartY = null;
     closeMapHeader?.addEventListener('touchstart', (e) => {
-      handleTouchStartY = e.touches[0].clientY;
+      handleTouchStartY = e.touches[0]?.clientY ?? null;
     }, { passive: true });
-    closeMapHeader?.addEventListener('touchmove', (e) => {
-      const touchY = e.touches[0].clientY;
-      const diffY = handleTouchStartY - touchY; // Swipe up diff
-      if (diffY > 50) {
-        closeMap();
-      }
+    closeMapHeader?.addEventListener('touchend', (e) => {
+      if (handleTouchStartY === null) return;
+      const touchY = e.changedTouches[0]?.clientY ?? handleTouchStartY;
+      const swipeDistance = handleTouchStartY - touchY;
+      handleTouchStartY = null;
+      if (swipeDistance > 50) closeMap();
     }, { passive: true });
+
+    setupTabIndicator(screen);
 
     // Tab switching
     screen.querySelectorAll('.tab').forEach(tab => {
@@ -194,6 +212,7 @@ export function renderResultsScreen() {
         // Update tab active state
         screen.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
+        syncTabIndicator(screen);
 
         // Update content
         const content = screen.querySelector('#tab-content');
@@ -202,13 +221,30 @@ export function renderResultsScreen() {
           void content.offsetWidth; // trigger reflow
           content.style.animation = 'fadeSlideIn 150ms ease-out forwards';
 
-          content.innerHTML = tabId === 'fastest'
-            ? renderRouteDisplay(fastestRoute)
-            : renderRouteDisplay(leastInterchangesRoute);
+          const selectedRoute = tabId === 'fastest' ? fastestRoute : leastInterchangesRoute;
+          const selectedConstructionRoute = tabId === 'fastest'
+            ? constructionFastestRoute
+            : constructionLeastInterchangesRoute;
+          content.innerHTML = `${renderRouteDisplay(selectedRoute)}${renderConstructionRouteDisplay(selectedConstructionRoute)}`;
         }
+        if (mapPanel.classList.contains('open')) renderActiveMap();
       });
     });
   });
 
   return screen;
+}
+
+function setupTabIndicator(screen) {
+  window.requestAnimationFrame(() => syncTabIndicator(screen));
+  window.addEventListener('resize', () => syncTabIndicator(screen));
+}
+
+function syncTabIndicator(screen) {
+  const tabs = screen.querySelector('#route-tabs');
+  const indicator = tabs?.querySelector('.tab-active-indicator');
+  const activeTab = tabs?.querySelector('.tab.active');
+  if (!tabs || !indicator || !activeTab) return;
+  indicator.style.left = `${activeTab.offsetLeft}px`;
+  indicator.style.width = `${activeTab.offsetWidth}px`;
 }

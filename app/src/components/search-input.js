@@ -45,9 +45,11 @@ export function createSearchInput({ id, label, icon, placeholder, onSelect, init
         <div class="dropdown-item" data-id="${station.id}" data-index="${i}">
           <span class="station-name">${highlightMatch(station.name, query)}</span>
           <span class="line-badges">
-            ${station.lines.map(l => 
-              `<span class="line-badge-mini" style="background-color: ${LINES[l]?.color || '#888'}"></span>`
-            ).join('')}
+            ${station.lines.map(l => {
+              const isConstruction = LINES[l]?.status === 'construction';
+              return `<span class="line-badge-mini${isConstruction ? ' construction' : ''}" style="background-color: ${LINES[l]?.color || '#888'}" title="${LINES[l]?.name || l}"></span>`;
+            }).join('')}
+            ${station.isConstructionOnly ? '<span class="station-status">Under construction</span>' : ''}
           </span>
         </div>
       `).join('');

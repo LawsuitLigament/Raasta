@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" class="metro-map" viewBox="0 0 1500 1450" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 100%; cursor: grab; touch-action: none;" width="1500" height="1450"><style>
         svg {
-          background: transparent;
+          background: #f4f0e8;
         }
 
         text,

@@ -2,29 +2,103 @@
    Component Styles
    ============================================ */
 
-/* --- Metro Map --- */
+/* --- Native Delhi Metro Route Map --- */
 .metro-map-container {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
-  background-color: transparent;
   cursor: grab;
   touch-action: none;
-  position: relative;
+  background: var(--bg-primary);
 }
 
-.metro-map-container:active {
-  cursor: grabbing;
+.metro-map-container:active { cursor: grabbing; }
+.route-map-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
 }
-
-.map-image-wrapper {
-  transform-origin: 0 0;
-  will-change: transform;
+.route-map-svg [data-map-viewport] { transform-origin: center; will-change: transform; }
+.map-canvas { fill: var(--bg-primary); }
+.network-map-reference { opacity: .78; pointer-events: none; }
+.map-route-summary {
+  position: absolute;
+  top: var(--space-md);
+  left: var(--space-md);
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  max-width: min(420px, calc(100% - 88px));
+  padding: 10px 13px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .14);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
 }
-
-.map-static-img {
+.map-route-summary strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.map-route-summary strong:last-of-type { text-align: right; }
+.map-route-summary span { color: var(--accent-primary); font-size: 1.1rem; }
+.map-route-summary small { grid-column: 1 / -1; color: var(--text-muted); font-size: var(--font-size-xs); }
+.map-asset-unavailable::after {
+  content: 'Base map unavailable — route geometry is still shown';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+.route-halo { fill: none; stroke: var(--bg-primary); stroke-width: 18; stroke-linecap: round; stroke-linejoin: round; opacity: .96; }
+.route-segment { fill: none; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: .98; }
+.station-halo { fill: var(--bg-primary); stroke: var(--text-primary); stroke-width: 3; }
+.station-node { stroke: var(--bg-primary); stroke-width: 3; }
+.station-label { fill: var(--text-primary); font-size: 13px; font-weight: 700; paint-order: stroke; stroke: var(--bg-primary); stroke-width: 4px; stroke-linejoin: round; }
+.station-badge { fill: var(--accent-primary); font-size: 10px; font-weight: 800; letter-spacing: 1px; }
+.map-legend { opacity: .9; }
+.legend-line { stroke-width: 6; stroke-linecap: round; }
+.legend-label { fill: var(--text-secondary); font-size: 14px; }
+.map-controls {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  display: grid;
+  gap: 6px;
+}
+.map-controls button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
+  color: var(--text-primary);
+  font-size: 21px;
+  line-height: 1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
+}
+.map-controls button:hover, .map-controls button:focus-visible { color: var(--accent-primary); }
+.map-interaction-hint {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-md);
+  transform: translateX(-50%);
+  padding: 7px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
   pointer-events: none;
 }
+.map-empty-state { display: grid; height: 100%; place-items: center; color: var(--text-muted); }
 
 /* --- Header / App Bar --- */
 .app-header {
@@ -117,7 +191,7 @@
 .nav-active-indicator {
   position: absolute;
   top: 6px;
-  left: 0;
+  left: 6px;
   z-index: 0;
   width: 52px;
   height: 52px;
@@ -126,8 +200,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   opacity: 0;
   pointer-events: none;
-  transform: translateX(0);
-  transition: opacity 180ms ease, transform 380ms cubic-bezier(0.22, 1, 0.36, 1), width 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 180ms ease, left 380ms cubic-bezier(0.22, 1, 0.36, 1), width 380ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .nav-active-indicator.visible {
@@ -135,6 +208,7 @@
 }
 
 .nav-item,
+.map-menu-trigger,
 .quick-search-trigger {
   display: inline-flex;
   align-items: center;
@@ -153,6 +227,7 @@
 }
 
 .nav-item svg,
+.map-menu-trigger svg,
 .quick-search-trigger svg {
   width: 23px;
   height: 23px;
@@ -162,6 +237,17 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   transition: transform var(--transition-spring);
+}
+
+.nav-currency {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .nav-item.active {
@@ -174,11 +260,13 @@
 }
 
 .nav-item:active,
+.map-menu-trigger:active,
 .quick-search-trigger:active {
   transform: scale(0.9);
 }
 
-.quick-search-trigger {
+.quick-search-trigger,
+.map-menu-trigger {
   display: none;
   color: var(--accent-primary);
   background: var(--bg-surface);
@@ -233,8 +321,8 @@
 .bottom-nav.map-mode {
   left: auto;
   right: 16px;
-  bottom: 50%;
-  transform: translateY(50%);
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: none;
   border-radius: 22px;
 }
 
@@ -246,8 +334,13 @@
   display: none;
 }
 
-.bottom-nav.map-mode .nav-item {
+.bottom-nav.map-mode .nav-item,
+.bottom-nav.map-mode .quick-search-trigger {
   display: none;
+}
+
+.bottom-nav.map-mode .map-menu-trigger {
+  display: inline-flex;
 }
 
 .bottom-nav.map-mode.rail-expanded .nav-item {
@@ -258,8 +351,12 @@
   pointer-events: auto;
 }
 
-.bottom-nav.map-mode.rail-expanded .quick-search-trigger {
+.bottom-nav.map-mode.rail-expanded .map-menu-trigger {
   display: none;
+}
+
+.bottom-nav.map-mode.rail-expanded .quick-search-trigger {
+  display: inline-flex;
 }
 
 .bottom-nav.map-mode .nav-tooltip {
@@ -281,6 +378,7 @@
 @media (prefers-reduced-motion: reduce) {
   .bottom-nav,
   .nav-item,
+  .map-menu-trigger,
   .quick-search-trigger,
   .nav-tooltip,
   .nav-active-indicator {
@@ -299,6 +397,8 @@
   align-items: flex-end;
   visibility: hidden;
   pointer-events: none;
+  --quick-search-keyboard-offset: 0px;
+  --quick-search-keyboard-gap: 12px;
 }
 
 .quick-search-overlay.open {
@@ -321,14 +421,16 @@
 .quick-search-sheet {
   position: relative;
   width: min(480px, 100%);
-  margin: 0 auto;
-  padding: var(--space-sm) var(--space-lg) calc(var(--space-xl) + env(safe-area-inset-bottom, 0px));
+  height: 50dvh;
+  max-height: calc(100dvh - var(--quick-search-keyboard-offset) - (var(--quick-search-keyboard-gap) * 2));
+  margin: 0 auto calc(var(--quick-search-keyboard-offset) + var(--quick-search-keyboard-gap));
+  padding: var(--space-sm) var(--space-lg) var(--space-lg);
+  overflow: hidden;
   border: 1px solid var(--border-subtle);
-  border-bottom: 0;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  border-radius: var(--radius-xl);
   background: var(--bg-primary);
   box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.24);
-  transform: translateY(100%);
+  transform: translateY(calc(100% + var(--quick-search-keyboard-gap)));
   transition: transform var(--transition-base);
 }
 
@@ -356,6 +458,10 @@
   margin: 2px 0 0;
   font-size: var(--font-size-xl);
   line-height: 1.2;
+}
+
+.quick-search-sheet .dropdown-list {
+  max-height: min(240px, calc(50dvh - 150px));
 }
 
 .quick-search-message {
@@ -550,6 +656,17 @@
   border-radius: var(--radius-full);
 }
 
+.dropdown-item .line-badge-mini.construction {
+  opacity: 0.45;
+  border: 1px dashed var(--text-muted);
+}
+
+.station-status {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+}
+
 .dropdown-empty {
   padding: var(--space-lg);
   text-align: center;
@@ -643,11 +760,26 @@
 
 /* --- Tabs --- */
 .tabs {
+  position: relative;
   display: flex;
   background: var(--bg-surface);
   border-radius: var(--radius-lg);
   padding: 4px;
   gap: 4px;
+  overflow: hidden;
+}
+
+.tab-active-indicator {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 0;
+  height: calc(100% - 8px);
+  width: 0;
+  border-radius: var(--radius-md);
+  background: var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+  transition: left 300ms cubic-bezier(0.22, 1, 0.36, 1), width 300ms cubic-bezier(0.22, 1, 0.36, 1), background-color var(--transition-base);
 }
 
 .tab {
@@ -658,8 +790,10 @@
   font-weight: 600;
   color: var(--text-muted);
   text-align: center;
-  transition: all var(--transition-fast);
+  transition: color var(--transition-fast), transform 180ms ease;
   cursor: pointer;
+  position: relative;
+  z-index: 1;
 }
 
 .tab:hover {
@@ -667,9 +801,11 @@
 }
 
 .tab.active {
-  background: var(--accent-primary);
   color: var(--ctp-base);
-  box-shadow: var(--shadow-sm);
+}
+
+.tab:active {
+  transform: scale(0.97);
 }
 
 /* --- Route Card --- */
@@ -820,6 +956,48 @@
 
 .interchange-banner .interchange-icon {
   font-size: 0.9rem;
+}
+
+/* --- Construction Route Preview --- */
+.construction-route {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  border: 1px dashed var(--text-muted);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  opacity: 0.72;
+}
+
+.construction-route-heading {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.construction-route-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.construction-route-line {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.construction-route-arrow {
+  color: var(--text-muted);
+}
+
+.construction-route-note {
+  margin-top: var(--space-sm);
+  font-size: var(--font-size-xs);
 }
 
 /* --- Fare Display --- */

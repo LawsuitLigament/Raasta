@@ -10,11 +10,12 @@ const SUN_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
 const MOON_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
 
 const NAV_ICONS = {
-  route: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M7.5 16.5 16.5 7.5"/><path d="M9 6h3a3 3 0 0 1 3 3v3"/></svg>`,
-  fare: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h8M8 13h5M8 17h3"/></svg>`,
+  route: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M6 16c0-4 12-4 12-8"/></svg>`,
+  fare: `<span class="nav-currency" aria-hidden="true">₹</span>`,
   stations: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="15" rx="3"/><path d="M8 18 6 21M16 18l2 3M8 8h8M8 12h.01M16 12h.01"/><path d="M9 21h6"/></svg>`,
-  settings: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="m19.4 15 .1.1a2 2 0 1 1-2.8 2.8l-.1-.1a2 2 0 0 0-3.4 1.4v.3a2 2 0 1 1-4 0v-.2A2 2 0 0 0 5.8 18l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A2 2 0 0 0 1.6 12.6v-.2a2 2 0 1 1 4 0v.2a2 2 0 0 0 3.4-1.4v-.3a2 2 0 1 1 4 0v.2a2 2 0 0 0 3.4 1.4Z"/></svg>`,
+  settings: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.09a2 2 0 0 1 1 1.74v.5a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="3"/></svg>`,
   search: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>`,
+  menu: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>`,
 };
 
 export function renderHeader(navigate) {
@@ -36,11 +37,17 @@ export function renderHeader(navigate) {
     </div>
   `;
 
+  const themeButton = header.querySelector('#theme-toggle-btn');
+  const updateThemeIcon = event => {
+    themeButton.innerHTML = event.detail.theme === 'mocha' ? SUN_ICON : MOON_ICON;
+  };
+
   header.querySelector('#header-logo').addEventListener('click', () => navigate('home'));
-  header.querySelector('#theme-toggle-btn').addEventListener('click', () => {
-    const newTheme = toggleTheme();
-    header.querySelector('#theme-toggle-btn').innerHTML = newTheme === 'mocha' ? SUN_ICON : MOON_ICON;
+  themeButton.addEventListener('click', () => {
+    const rect = themeButton.getBoundingClientRect();
+    toggleTheme({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
   });
+  window.addEventListener('themechange', updateThemeIcon);
 
   return header;
 }
@@ -82,6 +89,9 @@ export function renderBottomNav(navigate) {
       <button class="nav-item" data-path="settings" id="nav-settings" type="button" data-label="Settings" title="Settings">
         ${NAV_ICONS.settings}<span class="sr-only">Settings</span>
       </button>
+      <button class="map-menu-trigger" id="map-menu-trigger" type="button" aria-label="Open map navigation" title="Open map navigation">
+        ${NAV_ICONS.menu}<span class="sr-only">Open map navigation</span>
+      </button>
       <button class="quick-search-trigger" id="quick-search-trigger" type="button" aria-label="Open quick station search" title="Search destination">
         ${NAV_ICONS.search}<span class="sr-only">Search destination</span>
       </button>
@@ -92,17 +102,28 @@ export function renderBottomNav(navigate) {
     nav.querySelector('#quick-search-trigger')?.focus();
   });
   const trigger = nav.querySelector('#quick-search-trigger');
+  const mapMenuTrigger = nav.querySelector('#map-menu-trigger');
+
+  const leaveMapMode = () => {
+    if (!nav.classList.contains('map-mode')) return;
+    nav.classList.remove('map-mode', 'rail-expanded');
+    syncCollapsedState(nav);
+    window.dispatchEvent(new CustomEvent('metro-map:close'));
+  };
 
   nav.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => navigate(item.dataset.path));
+    item.addEventListener('click', () => {
+      leaveMapMode();
+      navigate(item.dataset.path);
+    });
+  });
+
+  mapMenuTrigger.addEventListener('click', () => {
+    nav.classList.toggle('rail-expanded');
+    nav.classList.remove('collapsed');
   });
 
   trigger.addEventListener('click', () => {
-    if (nav.classList.contains('map-mode')) {
-      nav.classList.toggle('rail-expanded');
-      nav.classList.remove('collapsed');
-      return;
-    }
     nav.classList.remove('collapsed');
     quickSearch.open();
   });
@@ -136,10 +157,8 @@ function setupNavIndicator(nav) {
       return;
     }
 
-    const innerRect = inner.getBoundingClientRect();
-    const itemRect = activeItem.getBoundingClientRect();
-    indicator.style.width = `${itemRect.width}px`;
-    indicator.style.transform = `translateX(${itemRect.left - innerRect.left}px)`;
+    indicator.style.width = `${activeItem.offsetWidth}px`;
+    indicator.style.left = `${activeItem.offsetLeft}px`;
     indicator.classList.add('visible');
   };
 
@@ -219,7 +238,7 @@ function setupNavTooltips(nav) {
     tooltip.classList.add('visible');
   };
 
-  nav.querySelectorAll('.nav-item, .quick-search-trigger').forEach(item => {
+  nav.querySelectorAll('.nav-item, .map-menu-trigger, .quick-search-trigger').forEach(item => {
     item.addEventListener('pointerdown', event => {
       if (event.pointerType === 'touch') {
         window.clearTimeout(holdTimer);

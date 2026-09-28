@@ -1,5 +1,5 @@
 // ============================================
-// Dijkstra's Algorithm â€” Fastest Route
+// Dijkstra's Algorithm — Fastest Route
 // Minimizes total travel time including
 // variable interchange transfer times
 // ============================================
@@ -52,17 +52,18 @@ class MinHeap {
   }
 }
 
-export function findFastestRoute(sourceId, destId) {
+export function findFastestRoute(sourceId, destId, options = {}) {
+  const { includeConstruction = false } = options;
   if (sourceId === destId) return null;
-  if (!getStationEdges(sourceId).length || !getStationEdges(destId).length) return null;
+  if (!getStationEdges(sourceId, includeConstruction).length || !getStationEdges(destId, includeConstruction).length) return null;
 
-  // State: (station, currentLine) â€” to track interchange costs
+  // State: (station, currentLine) — to track interchange costs
   const dist = {};
   const prev = {};
   const heap = new MinHeap();
 
   // Initialize: start from source on any line it belongs to
-  const sourceLines = getStationLines(sourceId);
+  const sourceLines = getStationLines(sourceId, includeConstruction);
   sourceLines.forEach(line => {
     const key = `${sourceId}|${line}`;
     dist[key] = 0;
@@ -80,7 +81,7 @@ export function findFastestRoute(sourceId, destId) {
     }
 
     // Explore neighbors on the SAME line
-    const edges = getStationEdges(station);
+    const edges = getStationEdges(station, includeConstruction);
     for (const edge of edges) {
       if (edge.line !== line) continue;
       
@@ -95,7 +96,7 @@ export function findFastestRoute(sourceId, destId) {
     }
 
     // Explore interchanges: switch to a different line at this station
-    const stationLines = getStationLines(station);
+    const stationLines = getStationLines(station, includeConstruction);
     for (const otherLine of stationLines) {
       if (otherLine === line) continue;
       

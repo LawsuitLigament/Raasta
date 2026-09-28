@@ -30,6 +30,7 @@ export function buildRouteResult(path, sourceId, destId, type) {
         line: node.line,
         lineName: LINES[node.line]?.name || node.line,
         lineColor: LINES[node.line]?.color || '#888',
+        lineStatus: LINES[node.line]?.status || 'operational',
         stations: [node.station],
         times: [totalTime],
         stationCount: 1,
@@ -53,6 +54,7 @@ export function buildRouteResult(path, sourceId, destId, type) {
 
   return {
     type,
+    hasConstruction: segments.some(segment => segment.lineStatus === 'construction'),
     segments,
     interchanges,
     totalTime,
