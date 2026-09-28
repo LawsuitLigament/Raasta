@@ -65,9 +65,7 @@
 .station-label-bg { fill: var(--bg-primary); fill-opacity: .94; stroke: var(--border-subtle); stroke-width: 2; }
 .station-label-text { fill: var(--text-primary); font-size: 17px; font-weight: 800; paint-order: stroke; stroke: var(--bg-primary); stroke-width: 3px; stroke-linejoin: round; }
 .station-badge { fill: var(--accent-primary); font-size: 10px; font-weight: 800; letter-spacing: 1px; }
-.map-legend { opacity: .9; }
-.legend-line { stroke-width: 6; stroke-linecap: round; }
-.legend-label { fill: var(--text-secondary); font-size: 14px; }
+
 .map-controls {
   position: absolute;
   top: var(--space-md);

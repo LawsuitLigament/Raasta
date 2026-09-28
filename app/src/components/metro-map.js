@@ -166,14 +166,6 @@ function createSvg(route) {
     viewport.appendChild(group);
   });
 
-  const legend = element('g', { class: 'map-legend' });
-  route.segments.forEach((segment, index) => {
-    const x = 58 + (index % 2) * 250;
-    const y = 570 + Math.floor(index / 2) * 34;
-    legend.appendChild(element('line', { x1: x, y1: y, x2: x + 28, y2: y, stroke: segment.lineColor, class: 'legend-line' }));
-    legend.appendChild(element('text', { x: x + 40, y: y + 5, class: 'legend-label' }, segment.lineName));
-  });
-  viewport.appendChild(legend);
 
   svg.append(title, description, viewport);
   return svg;
@@ -282,7 +274,7 @@ function getLabelPosition(points, index) {
   const normalX = -tangentY / tangentLength;
   const normalY = tangentX / tangentLength;
   const side = index % 2 === 0 ? 1 : -1;
-  const offset = 44;
+  const offset = 72;
 
   return {
     x: Math.min(VIEWBOX_WIDTH - 100, Math.max(100, point.x + normalX * offset * side)),
