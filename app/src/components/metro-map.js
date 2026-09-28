@@ -133,7 +133,6 @@ function createSvg(route) {
     viewport.classList.add('map-asset-unavailable');
   });
   viewport.appendChild(baseMap);
-  viewport.appendChild(createNetworkLabels(route));
 
   route.segments.forEach((segment) => {
     const segmentPoints = segment.stations
@@ -217,6 +216,7 @@ function setupInteractions(container, viewport, controls, route) {
     update();
   };
 
+  controls.addEventListener('pointerdown', event => event.stopPropagation());
   controls.querySelector('[data-map-action="zoom-in"]').addEventListener('click', () => zoom(1.25));
   controls.querySelector('[data-map-action="zoom-out"]').addEventListener('click', () => zoom(0.8));
   controls.querySelector('[data-map-action="rotate"]').addEventListener('click', () => {
@@ -265,24 +265,6 @@ function setupInteractions(container, viewport, controls, route) {
   update();
 }
 
-function createNetworkLabels(route) {
-  const routeStationIds = new Set(route.points.map(point => point.id));
-  const labels = element('g', { class: 'network-station-labels' });
-
-  Object.entries(STATION_MAP_POSITIONS).forEach(([stationId, position]) => {
-    const station = STATIONS[stationId];
-    if (!station || routeStationIds.has(stationId)) return;
-    labels.appendChild(element('text', {
-      x: Math.min(VIEWBOX_WIDTH - 12, position.x + 12),
-      y: Math.max(16, position.y - 10),
-      class: 'network-station-label',
-      'text-anchor': 'start',
-      'aria-label': station.name,
-    }, station.name));
-  });
-
-  return labels;
-}
 
 function getLabelPosition(points, index) {
   const point = points[index];

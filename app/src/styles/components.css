@@ -62,8 +62,7 @@
 .station-node { stroke: var(--bg-primary); stroke-width: 3; }
 .station-label { pointer-events: none; }
 .station-label-connector { stroke: var(--text-muted); stroke-width: 2; stroke-dasharray: 5 4; opacity: .75; }
-.network-station-labels { pointer-events: none; }
-.network-station-label { fill: var(--text-secondary); font-size: 15px; font-weight: 650; paint-order: stroke; stroke: var(--bg-primary); stroke-width: 4px; stroke-linejoin: round; opacity: .92; }
+
 .station-label-bg { fill: var(--bg-primary); fill-opacity: .94; stroke: var(--border-subtle); stroke-width: 2; }
 .station-label-text { fill: var(--text-primary); font-size: 17px; font-weight: 800; paint-order: stroke; stroke: var(--bg-primary); stroke-width: 3px; stroke-linejoin: round; }
 .station-badge { fill: var(--accent-primary); font-size: 10px; font-weight: 800; letter-spacing: 1px; }
